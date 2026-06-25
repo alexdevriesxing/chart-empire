@@ -38,7 +38,7 @@ export class SimulationEngine {
       strategy: options.strategy,
       market: options.market,
       week: 1,
-      cash: challenge?.cash ?? strategy.cash,
+      cash: options.sandbox ? clamp(options.startingBudget || strategy.cash, 25_000, 2_000_000) : challenge?.cash ?? strategy.cash,
       reputation: 12,
       credibility: strategy.credibility,
       fanbase: 0,
@@ -61,7 +61,10 @@ export class SimulationEngine {
       totalExpenses: 0,
       awardsWon: 0,
       toursCompleted: 0,
-      companyValuation: challenge?.cash ?? strategy.cash
+      companyValuation: options.sandbox ? clamp(options.startingBudget || strategy.cash, 25_000, 2_000_000) : challenge?.cash ?? strategy.cash,
+      sandbox: Boolean(options.sandbox),
+      aiAggression: clamp(options.aiAggression ?? 50),
+      trendVolatility: clamp(options.trendVolatility ?? 50)
     });
   }
 
@@ -87,7 +90,7 @@ export class SimulationEngine {
     const cost = 18000 + artist.talent * 120;
     if (this.state.cash < cost) throw new Error("Not enough cash for this studio session.");
     const title = this.songTitle();
-    const quality = clamp(Math.round(artist.talent * 0.65 + artist.morale * 0.2 + this.rng.int(-8, 14)));
+    const quality = clamp(Math.round(artist.talent * 0.65 + artist.morale * 0.2 + this.staffBonus("A&R") * .25 + this.rng.int(-8, 14)));
     const song: Song = {
       id: `song-${crypto.randomUUID()}`,
       artistId,
@@ -193,13 +196,13 @@ export class SimulationEngine {
     const scores: Array<{ song: Song; score: number }> = [];
 
     for (const artist of this.state.artists.filter((item) => item.signed)) {
-      expenses += artist.weeklyCost;
+      expenses += Math.round(artist.weeklyCost * (1 - Math.min(0.12, this.staffBonus("Finance") * .002)));
       artist.contractWeeks = Math.max(0, artist.contractWeeks - 1);
       artist.fatigue = clamp(artist.fatigue - 4);
       artist.morale = clamp(artist.morale + (artist.fatigue > 75 ? -4 : 1));
     }
 
-    for (const staff of this.state.staff) expenses += staff.weeklyCost;
+    for (const staff of this.state.staff) expenses += Math.round(staff.weeklyCost * (1 - Math.min(0.08, this.staffBonus("Finance") * .001)));
 
     for (const song of this.state.songs.filter((item) => item.status === "released")) {
       const artist = this.requireArtist(song.artistId);
@@ -272,7 +275,7 @@ export class SimulationEngine {
         title: this.songTitle(),
         artist: `${this.rng.pick(["Luma", "Kori", "Zen", "Aya", "Melo", "Oren"])} ${this.rng.pick(["Blue", "Ray", "Fox", "June", "Vale", "Sky"])}`,
         label: this.rng.pick(aiLabels),
-        score: this.rng.int(115, 285),
+        score: this.rng.int(105 + Math.round(this.state.aiAggression * .2), 245 + Math.round(this.state.aiAggression * .8)),
         playerOwned: false
       });
     }
@@ -324,6 +327,9 @@ export class SimulationEngine {
       awardsWon: state.awardsWon || 0,
       toursCompleted: state.toursCompleted || 0,
       companyValuation: state.companyValuation || Math.max(0, state.cash),
+      sandbox: state.sandbox || false,
+      aiAggression: state.aiAggression ?? 50,
+      trendVolatility: state.trendVolatility ?? 50,
       artists: state.artists.map((artist) => ({ ...artist, contractWeeks: artist.contractWeeks || (artist.signed ? 104 : 0), royaltyRate: artist.royaltyRate || 20 })),
       songs: state.songs.map((song) => ({ ...song, peakPosition: song.peakPosition || song.chartPosition }))
     };
@@ -340,10 +346,12 @@ export class SimulationEngine {
 
   private updateTrends(): void {
     this.state.trends = this.state.trends.map((trend) => ({ ...trend, weeksRemaining: trend.weeksRemaining - 1 })).filter((trend) => trend.weeksRemaining > 0);
-    if (this.state.trends.length < 3 && this.rng.next() < 0.65) {
+    const trendChance = 0.35 + this.state.trendVolatility * .006;
+    if (this.state.trends.length < 3 && this.rng.next() < trendChance) {
       const name = this.rng.pick(trends);
       const genre = this.rng.pick(genres);
-      const trend: Trend = { id: crypto.randomUUID(), name, genre, strength: this.rng.int(8, 24), weeksRemaining: this.rng.int(4, 10) };
+      const maxDuration = Math.max(5, 12 - Math.round(this.state.trendVolatility / 20));
+      const trend: Trend = { id: crypto.randomUUID(), name, genre, strength: this.rng.int(8, 24), weeksRemaining: this.rng.int(3, maxDuration) };
       this.state.trends.push(trend);
       this.addNews(`${name} pushes ${genre} into the center of the fictional industry conversation.`, "neutral");
     }

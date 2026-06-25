@@ -78,4 +78,22 @@ describe("SimulationEngine", () => {
     expect(game.state.cash).toBe(25_000);
     expect(game.state.artists.some((artist) => artist.signed)).toBe(true);
   });
+
+  it("applies sandbox budget and market volatility controls", () => {
+    const game = SimulationEngine.create({
+      labelName: "Sandbox Signal",
+      logo: "logo-purple",
+      market: "Tokyo",
+      strategy: "viral",
+      sandbox: true,
+      startingBudget: 1_000_000,
+      aiAggression: 85,
+      trendVolatility: 90,
+      seed: 123
+    });
+    expect(game.state.cash).toBe(1_000_000);
+    expect(game.state.sandbox).toBe(true);
+    expect(game.state.aiAggression).toBe(85);
+    expect(game.state.trendVolatility).toBe(90);
+  });
 });

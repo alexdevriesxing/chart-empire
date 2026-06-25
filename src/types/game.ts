@@ -48,7 +48,7 @@ export interface Song {
 export interface Campaign {
   id: string;
   songId: string;
-  type: "social" | "radio" | "press" | "playlist" | "fanclub";
+  type: "social" | "radio" | "press" | "playlist" | "fanclub" | "video" | "international";
   spend: number;
   startedWeek: number;
 }
@@ -146,6 +146,9 @@ export interface GameState {
   awardsWon: number;
   toursCompleted: number;
   companyValuation: number;
+  sandbox: boolean;
+  aiAggression: number;
+  trendVolatility: number;
 }
 
 export interface NewGameOptions {
@@ -156,6 +159,10 @@ export interface NewGameOptions {
   seed?: number;
   difficulty?: Difficulty;
   challengeId?: string | null;
+  sandbox?: boolean;
+  startingBudget?: number;
+  aiAggression?: number;
+  trendVolatility?: number;
 }
 
 export interface WeekReport {

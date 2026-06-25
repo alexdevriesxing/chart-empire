@@ -31,6 +31,11 @@
 .strategy-choice small { min-height: 36px; color: var(--color-muted); font-weight: 500; }
 .strategy-choice em { color: var(--color-cyan); font-style: normal; font-size: .7rem; }
 .strategy-choice input:checked + span { border-color: var(--color-magenta); background: rgba(255,46,136,.08); }
+.sandbox-settings { padding: 1rem !important; border: 1px solid rgba(124,58,237,.2) !important; border-radius: 14px; background: rgba(124,58,237,.06); }
+.sandbox-settings > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-top: .7rem; }
+.sandbox-settings label { display: grid; gap: .4rem; color: var(--color-muted); font-size: .7rem; }
+.sandbox-settings select { padding: .7rem; border: 1px solid rgba(255,255,255,.12); border-radius: 9px; background: #0b1022; color: white; }
+.sandbox-settings p { margin: .7rem 0 0; font-size: .65rem; }
 .start-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
 .auth-card { max-width: 620px; display: grid; gap: 1rem; }
 .auth-card h1 { font-size: clamp(2.2rem, 6vw, 4rem); }
@@ -239,6 +244,7 @@
   .start-screen { padding: 1rem .6rem; }
   .start-card { border-radius: 17px; }
   .strategy-grid, .card-grid, .campaign-grid { grid-template-columns: 1fr; }
+  .sandbox-settings > div { grid-template-columns: 1fr; }
   .cloud-career-grid, .tour-grid, .staff-list { grid-template-columns: 1fr; }
   .account-heading { flex-direction: column; }
   .account-actions { width: 100%; flex-wrap: wrap; }
