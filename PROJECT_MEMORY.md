@@ -150,3 +150,7 @@ Before claiming completion:
 ## Repository ownership
 
 Publish this project to GitHub under the `alexdevriesxing` account, with `main` as the production branch.
+
+## Implementation status
+
+The repository now includes the playable core loop plus registered accounts, D1 cloud careers, R2 logo uploads, verified leaderboards, staff, touring, contracts, trends, 150 event templates, fictional social posts, challenge starts/progress, valuation, awards, and extended achievements. Production account activation still requires a real Turnstile widget for `chart-empire.pages.dev`; never substitute Cloudflare’s public test keys in production.

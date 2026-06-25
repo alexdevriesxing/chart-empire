@@ -14,7 +14,9 @@ Recurring roster costs create pressure even when no campaign is active. Studio w
 
 ## Progression
 
-Current progression is open-ended career growth measured through cash, fans, reputation, chart peaks, catalog activity, and achievements. Planned layers include staff capacity, touring, contracts, market-specific demand, trend cycles, crisis choices, awards, and challenge-specific victory conditions.
+Progression is measured through cash, fans, reputation, chart peaks, catalog activity, valuation, awards, tours, staff, and achievements. Trend cycles affect matching genres. Staff improve specific operating areas while increasing weekly overhead. Tours create ticket revenue, fatigue, and fan growth. Event choices trade cash, reputation, morale, and buzz.
+
+Ten challenge starts provide scenario-specific budgets, roster conditions, event pressure, and progress targets. Challenge scores can be published only from authenticated cloud saves.
 
 ## Failure and recovery
 

@@ -1,4 +1,4 @@
-import type { Artist, StrategyId } from "../../types/game";
+import type { Artist, PendingEvent, StaffMember, StrategyId } from "../../types/game";
 import { RNG } from "../systems/RNG";
 
 export const genres = [
@@ -73,18 +73,70 @@ export function generateArtists(seed = 2048, count = 75): Artist[] {
       fatigue: rng.int(0, 18),
       buzz: rng.int(2, 28),
       weeklyCost: rng.int(1800, 9200),
-      signed: false
+      signed: false,
+      contractWeeks: 0,
+      royaltyRate: rng.int(14, 28)
     });
   }
   return artists;
 }
 
 export const challengeScenarios = [
-  "Save a failing indie label", "Launch an idol group globally", "Break an unknown artist on €25K",
-  "Revive a legacy act", "Survive a scandal year", "Win the Global Sound Prize",
-  "Dominate through fan clubs", "Build a streaming-first label", "Turn one viral hit into a career",
-  "Build a boutique credibility empire"
+  { id: "rescue", name: "Save a failing indie label", description: "Start in debt and reach positive cash by week 16.", cash: -45_000, target: "Positive cash by week 16" },
+  { id: "idol-global", name: "Launch an idol group globally", description: "Build a fanbase of 150K with high training costs.", cash: 350_000, target: "150K fans" },
+  { id: "tiny-budget", name: "Break an unknown artist on €25K", description: "Create a Top 20 release without exceeding the starting budget.", cash: 25_000, target: "Top 20 song" },
+  { id: "legacy", name: "Revive a legacy act", description: "Rebuild buzz and secure a Top 10 comeback.", cash: 180_000, target: "Top 10 comeback" },
+  { id: "scandal", name: "Survive a scandal year", description: "Navigate frequent crises while protecting reputation.", cash: 240_000, target: "Reputation 50+" },
+  { id: "sound-prize", name: "Win the Global Sound Prize", description: "Build quality, credibility, and award momentum.", cash: 260_000, target: "Win an award" },
+  { id: "fanclubs", name: "Dominate through fan clubs", description: "Reach 100K fans without radio promotion.", cash: 150_000, target: "100K fans, no radio" },
+  { id: "streaming", name: "Build a streaming-first label", description: "Accumulate five million catalog streams.", cash: 220_000, target: "5M streams" },
+  { id: "viral-career", name: "Turn one viral hit into a career", description: "Follow a Top 10 with a second Top 20 release.", cash: 190_000, target: "Two Top 20 songs" },
+  { id: "boutique", name: "Build a boutique credibility empire", description: "Reach 85 credibility while remaining profitable.", cash: 120_000, target: "85 credibility" }
 ] as const;
+
+export const trends = [
+  "Analog Warmth", "Bedroom Ballads", "Festival Bass", "Guitar Return", "Afro-Fusion Summer",
+  "Idol Precision", "Lo-Fi Confessions", "Club Jazz Nights", "Hyper Ballad Drama", "Soul Revival",
+  "Dance Challenge Hooks", "Acoustic Reset", "Global Duets", "Dark Pop Cinema", "Live Session Culture",
+  "Collector Vinyl Wave", "Micro-Genre Playlists", "Fan Translation Teams", "Short-Form Choreography", "Late-Night R&B",
+  "Underground Rap Cyphers", "Electronic Folk", "Comedy Audio Memes", "Stadium Rock Return", "Gospel Choir Features"
+] as const;
+
+const eventSubjects = ["A surprise playlist add", "A studio leak", "A festival cancellation", "A fan-club campaign", "A rival signing", "A producer dispute", "A radio breakthrough", "A review controversy", "A viral dance clip", "A tour-bus breakdown"];
+const eventComplications = ["creates unexpected momentum", "splits the fanbase", "forces a costly decision", "opens an international door", "puts artist morale at risk"];
+const eventStakeholders = ["your lead artist", "the A&R team", "a fictional promoter", "an influential fan account", "a rival label"];
+
+export const eventCatalog: Array<Omit<PendingEvent, "id">> = Array.from({ length: 150 }, (_, index) => {
+  const subject = eventSubjects[index % eventSubjects.length]!;
+  const complication = eventComplications[Math.floor(index / eventSubjects.length) % eventComplications.length]!;
+  const stakeholder = eventStakeholders[Math.floor(index / (eventSubjects.length * eventComplications.length)) % eventStakeholders.length]!;
+  const crisis = index % 3 === 1;
+  return {
+    title: `${subject}: ${stakeholder}`,
+    description: `${subject} ${complication}. The response will shape this week's industry narrative.`,
+    category: crisis ? "crisis" : index % 3 === 0 ? "opportunity" : "industry",
+    choices: [
+      { id: "bold", label: "Make the bold move", cash: crisis ? -18_000 : -10_000, reputation: 5, morale: -2, buzz: 9 },
+      { id: "careful", label: "Protect the artist", cash: -4_000, reputation: 1, morale: 7, buzz: 1 },
+      { id: "decline", label: "Stay focused", cash: 0, reputation: crisis ? -3 : 0, morale: 1, buzz: -2 }
+    ]
+  };
+});
+
+const staffFirst = ["Mara", "Jonas", "Ivy", "Rafi", "Sana", "Dax", "Lina", "Omar", "Tess", "Milo"];
+const staffLast = ["Signal", "Hart", "Quill", "Morrow", "Nox", "Vale", "Aster", "Lane"];
+const staffRoles: StaffMember["role"][] = ["A&R", "Marketing", "Radio", "Touring", "Finance"];
+
+export function generateStaff(seed: number, count = 20): StaffMember[] {
+  const rng = new RNG(seed ^ 0x51aff);
+  return Array.from({ length: count }, (_, index) => ({
+    id: `staff-${index + 1}`,
+    name: `${rng.pick(staffFirst)} ${rng.pick(staffLast)}`,
+    role: rng.pick(staffRoles),
+    skill: rng.int(45, 92),
+    weeklyCost: rng.int(1600, 7800)
+  }));
+}
 
 export const achievementNames = [
   "Bedroom Mogul", "Playlist Whisperer", "Radio Breakthrough", "Indie Credibility", "Idol Machine",

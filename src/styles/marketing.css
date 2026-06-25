@@ -81,6 +81,9 @@
 .guide-grid span, .challenge-grid span { color: var(--color-cyan); font-size: .75rem; font-weight: 900; }
 .guide-grid h2 { margin-top: 2rem; font-size: 1.35rem; }
 .challenge-grid h3 { margin: 2rem 0 .7rem; font-size: 1.25rem; }
+.challenge-grid article { display: flex; flex-direction: column; }
+.challenge-grid article > b { margin-bottom: 1rem; color: var(--color-gold); font-size: .75rem; }
+.challenge-grid article > a { margin-top: auto; }
 .callout { margin-top: 2rem; padding: 2rem; border-radius: 20px; background: rgba(24,224,255,.07); border: 1px solid rgba(24,224,255,.18); }
 .callout.accent { background: linear-gradient(135deg, rgba(255,46,136,.1), rgba(124,58,237,.12)); border-color: rgba(255,46,136,.2); }
 .inline-feature { display: grid; grid-template-columns: .7fr 1.3fr; align-items: center; gap: 2rem; margin-bottom: 2rem; }
@@ -96,6 +99,14 @@
 .settings-card input { width: 22px; height: 22px; accent-color: var(--color-magenta); }
 .contact-form label { display: grid; gap: .5rem; color: #cbd5e1; font-weight: 700; }
 .contact-form input, .contact-form select, .contact-form textarea { width: 100%; padding: .85rem 1rem; border: 1px solid rgba(255,255,255,.13); border-radius: 11px; background: rgba(5,8,20,.7); color: white; }
+.public-chart { overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(255,255,255,.025); }
+.public-chart-head, .public-chart article { display: grid; grid-template-columns: 70px 1.4fr 1fr 70px 110px; align-items: center; gap: 1rem; padding: 1rem 1.2rem; }
+.public-chart-head { color: var(--color-muted); font-size: .62rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.public-chart article { border-top: 1px solid rgba(255,255,255,.07); }
+.public-chart article > b { color: var(--color-gold); }
+.public-chart article > div { display: grid; gap: .2rem; }
+.public-chart small, .public-chart article > span { color: var(--color-muted); font-size: .7rem; }
+.public-chart em { color: var(--color-cyan); font-style: normal; font-weight: 800; }
 @keyframes equalize { to { transform: scaleY(1.8); } }
 @keyframes sweep { to { transform: rotate(18deg); } }
 @keyframes sweep2 { to { transform: rotate(-18deg); } }
@@ -117,5 +128,7 @@
   .news-stack article { margin-left: 0 !important; }
   .song-card { grid-template-columns: 1fr; }
   .prose-section { grid-template-columns: 1fr; }
+  .public-chart-head, .public-chart article { grid-template-columns: 42px 1fr 80px; }
+  .public-chart-head span:nth-child(3), .public-chart-head span:nth-child(4), .public-chart article > span { display: none; }
   .page-hero { padding-top: 4rem; }
 }

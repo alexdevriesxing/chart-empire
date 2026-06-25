@@ -3,6 +3,7 @@ import type { Env } from "../functions/_shared";
 interface Job {
   type: "contact-created" | "save-backup" | "leaderboard-recalculate";
   id: string;
+  userId?: string;
 }
 
 export default {

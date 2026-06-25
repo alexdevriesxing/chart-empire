@@ -6,4 +6,6 @@ D1 holds relational records. KV holds public configuration and short-lived rate-
 
 All optional third-party browser integrations are gated by the local consent state. Server secrets never use the `VITE_` prefix.
 
-Authentication is deliberately left disabled. Before enabling it, select an identity system, define verified-email and recovery flows, store only audited password hashes or provider identifiers, rotate sessions, add CSRF protections where relevant, and bind every save/upload to the authenticated user.
+Authentication uses salted PBKDF2-SHA256 hashes with a secret pepper and opaque session tokens whose SHA-256 hashes are stored in D1. Mutating routes validate request origin and sensitive public forms use Turnstile. Cloud saves and R2 object metadata are owner-scoped. Public leaderboard scores are derived server-side from cloud-save state.
+
+Password reset and verified-email delivery remain future work; the UI does not claim those flows exist.

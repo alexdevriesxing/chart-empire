@@ -12,7 +12,8 @@ export type StrategyId =
   | "soul"
   | "novelty";
 
-export type GameView = "dashboard" | "scout" | "roster" | "studio" | "marketing" | "charts" | "finance";
+export type GameView = "dashboard" | "scout" | "roster" | "studio" | "marketing" | "touring" | "staff" | "charts" | "finance";
+export type Difficulty = "rising" | "competitive" | "mogul";
 
 export interface Artist {
   id: string;
@@ -27,6 +28,8 @@ export interface Artist {
   buzz: number;
   weeklyCost: number;
   signed: boolean;
+  contractWeeks: number;
+  royaltyRate: number;
 }
 
 export interface Song {
@@ -39,6 +42,7 @@ export interface Song {
   streams: number;
   radioSpins: number;
   chartPosition?: number;
+  peakPosition?: number;
 }
 
 export interface Campaign {
@@ -54,6 +58,51 @@ export interface NewsItem {
   week: number;
   tone: "good" | "neutral" | "danger";
   text: string;
+}
+
+export interface SocialPost {
+  id: string;
+  week: number;
+  platform: string;
+  author: string;
+  text: string;
+  sentiment: "hype" | "debate" | "backlash";
+}
+
+export interface Trend {
+  id: string;
+  name: string;
+  genre: string;
+  strength: number;
+  weeksRemaining: number;
+}
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  role: "A&R" | "Marketing" | "Radio" | "Touring" | "Finance";
+  skill: number;
+  weeklyCost: number;
+}
+
+export interface Tour {
+  id: string;
+  artistId: string;
+  name: string;
+  markets: string[];
+  weeksRemaining: number;
+  capacity: number;
+  ticketPrice: number;
+  bookedCost: number;
+  revenue: number;
+}
+
+export interface PendingEvent {
+  id: string;
+  title: string;
+  description: string;
+  category: "opportunity" | "crisis" | "industry";
+  choices: Array<{ id: string; label: string; cash: number; reputation: number; morale: number; buzz: number }>;
 }
 
 export interface ChartEntry {
@@ -85,6 +134,18 @@ export interface GameState {
   news: NewsItem[];
   achievements: string[];
   tutorialComplete: boolean;
+  difficulty: Difficulty;
+  challengeId: string | null;
+  staff: StaffMember[];
+  tours: Tour[];
+  trends: Trend[];
+  socialFeed: SocialPost[];
+  pendingEvent: PendingEvent | null;
+  totalRevenue: number;
+  totalExpenses: number;
+  awardsWon: number;
+  toursCompleted: number;
+  companyValuation: number;
 }
 
 export interface NewGameOptions {
@@ -93,6 +154,8 @@ export interface NewGameOptions {
   strategy: StrategyId;
   market: string;
   seed?: number;
+  difficulty?: Difficulty;
+  challengeId?: string | null;
 }
 
 export interface WeekReport {

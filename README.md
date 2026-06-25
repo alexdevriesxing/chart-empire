@@ -13,14 +13,17 @@ Players create a label, scout generated artists, sign a roster, record and relea
 - 75 procedurally generated fictional artists
 - 16 rival labels, 12 publications, 12 radio networks, and 10 streaming platforms
 - Scouting, signing, recording, releasing, promotion, weekly resolution, charts, finance, news, and achievements
+- 150 deterministic event templates, 25 trend themes, fictional social posts, staff hiring, touring, contracts, and challenge progress
 - IndexedDB guest saves with LocalStorage fallback
 - Save export/import
+- PBKDF2 password accounts with opaque HttpOnly sessions
+- Authenticated D1 cloud careers, account export/deletion, server-verified leaderboards, and R2 logo uploads
 - Consent-gated external media and ad hooks
 - Xing Records and Indie Music Promotion partner pages
 - Cloudflare Pages Functions, D1 migrations, KV/R2/Queue bindings, security headers, and rate-limit hooks
 - PWA manifest, offline fallback, sitemap, robots, structured metadata, and CI
 
-Registered authentication, authenticated cloud saves, and R2 uploads are intentionally disabled until a production identity provider or audited Workers-compatible password implementation is selected. The API returns explicit `501`/`401` responses instead of pretending those features are complete.
+Registered careers use Workers Web Crypto PBKDF2-SHA256 password hashes with per-user salts and a secret production pepper. Sessions are opaque, hashed in D1, HttpOnly, Secure, SameSite=Lax, and expire after 30 days. Registration, login, deletion, and contact require server-validated Turnstile.
 
 ## Local development
 
@@ -73,8 +76,20 @@ The project targets Cloudflare Pages with Pages Functions:
 - `R2_ASSETS`: future authenticated label-logo uploads
 - `SAVE_QUEUE`: contact, save backup, and aggregation jobs
 - `TURNSTILE_SECRET_KEY`, `SESSION_SECRET`, `ADMIN_SECRET`: secrets
+- `PASSWORD_PEPPER`: independent password-hash pepper
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) and [CLOUDFLARE_ARCHITECTURE.md](./CLOUDFLARE_ARCHITECTURE.md).
+
+## Registered careers
+
+Configure a Turnstile widget for the production domain, set `VITE_TURNSTILE_SITE_KEY` at build time, and add `TURNSTILE_SECRET_KEY`, `SESSION_SECRET`, and `PASSWORD_PEPPER` as Pages secrets. Registered players can:
+
+- create and sign into an account;
+- create up to 10 private cloud careers;
+- synchronize the current career;
+- publish a server-calculated leaderboard score;
+- upload a PNG, JPEG, or WebP label logo to R2;
+- export or permanently delete their account data.
 
 ## Content expansion
 

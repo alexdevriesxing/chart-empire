@@ -1,6 +1,7 @@
 import { challengeScenarios } from "../game/data/content";
 import { siteConfig } from "../config/siteConfig";
 import { consentService, type ConsentCategory } from "../services/ConsentService";
+import { mountTurnstile } from "../services/TurnstileService";
 import { adSlot, escapeHtml, shell, songOfWeek } from "./components";
 
 const features = [
@@ -65,8 +66,8 @@ export function contentPage(path: string): string {
     "/music-promotion": { eyebrow: "Real-world artist support", title: "Promote your music beyond the game.", lead: "Strategy starts with a strong release, clear positioning, realistic goals, and outreach that fits the artist.", body: promotionBody() },
     "/xing-records": { eyebrow: "Real independent music", title: "Discover Xing Records.", lead: "A real-world music home inside a completely fictional game universe.", body: `<section class="inline-feature"><div><h2>Song of the Week</h2><p>Feature a current Xing Records release through environment configuration. The video embed remains disabled until external-media consent is granted.</p></div>${songOfWeek()}</section><section class="prose-grid"><article><h3>Featured releases</h3><p>Release cards are ready for curated artwork and links when owned media is supplied.</p></article><article><h3>Artist showcase</h3><p>Use this area for real Xing Records artists without mixing them into the fictional simulation.</p></article></section><a class="button button-primary" href="${siteConfig.xingRecordsUrl}" target="_blank" rel="noopener">Visit Xing Records ↗</a>` },
     "/song-of-the-week": { eyebrow: "Xing Records presents", title: "Song of the Week.", lead: "A consent-aware spotlight for a real independent release.", body: songOfWeek() },
-    "/challenges": { eyebrow: "Challenge scenarios", title: "Ten ways to prove your strategy.", lead: "Each scenario changes the constraints, but not the fundamentals: protect cash, develop artists, and build durable demand.", body: `<div class="challenge-grid">${challengeScenarios.map((challenge, index) => `<article><span>${String(index + 1).padStart(2, "0")}</span><h3>${challenge}</h3><p>${["A focused campaign with strict victory conditions.", "A volatile scenario built for replayable decisions.", "A strategic test of timing, cashflow, and artist health."][index % 3]}</p></article>`).join("")}</div>` },
-    "/leaderboards": { eyebrow: "Global Pulse", title: "Public leaderboards.", lead: "Cloud leaderboards activate after the D1 binding is configured. Guest careers stay private on this device.", body: `<div class="empty-state"><span>◎</span><h2>The global season is warming up.</h2><p>Deploy the Cloudflare backend and submit a completed career to populate this board.</p><a class="button button-primary" href="/play" data-link>Start a career</a></div>` },
+    "/challenges": { eyebrow: "Challenge scenarios", title: "Ten ways to prove your strategy.", lead: "Each scenario changes the constraints, but not the fundamentals: protect cash, develop artists, and build durable demand.", body: `<div class="challenge-grid">${challengeScenarios.map((challenge, index) => `<article><span>${String(index + 1).padStart(2, "0")}</span><h3>${challenge.name}</h3><p>${challenge.description}</p><b>${challenge.target}</b><a class="text-link" href="/play?challenge=${challenge.id}" data-link>Play challenge →</a></article>`).join("")}</div>` },
+    "/leaderboards": { eyebrow: "Global Pulse", title: "Public leaderboards.", lead: "Verified scores are calculated from registered cloud careers, not accepted directly from the browser.", body: `<div id="leaderboard-board" class="leaderboard-board"><div class="empty-state"><span>◎</span><h2>Loading the global season…</h2></div></div>` },
     "/privacy": { eyebrow: "Legal", title: "Privacy policy.", lead: "Chart Empire is designed so guest play works without an account.", body: legalBody("privacy") },
     "/terms": { eyebrow: "Legal", title: "Terms of use.", lead: "Play fairly, upload only content you own, and remember that the simulated industry is fictional.", body: legalBody("terms") },
     "/contact": { eyebrow: "Contact", title: "Talk to the team.", lead: "Questions about the game, Xing Records, or a real music-promotion campaign can be routed here.", body: contactBody() },
@@ -111,7 +112,7 @@ function legalBody(type: "privacy" | "terms"): string {
 }
 
 function contactBody(): string {
-  return `<form id="contact-form" class="contact-form"><label>Name<input name="name" maxlength="80" required autocomplete="name"></label><label>Email<input name="email" type="email" maxlength="160" required autocomplete="email"></label><label>Topic<select name="topic"><option>Game feedback</option><option>Music promotion</option><option>Xing Records</option><option>Partnership</option></select></label><label>Message<textarea name="message" minlength="10" maxlength="2000" required rows="7"></textarea></label><input type="hidden" name="sourcePage" value="/contact"><button class="button button-primary" type="submit">Send message</button><p class="form-status" role="status"></p></form>`;
+  return `<form id="contact-form" class="contact-form"><label>Name<input name="name" maxlength="80" required autocomplete="name"></label><label>Email<input name="email" type="email" maxlength="160" required autocomplete="email"></label><label>Topic<select name="topic"><option>Game feedback</option><option>Music promotion</option><option>Xing Records</option><option>Partnership</option></select></label><label>Message<textarea name="message" minlength="10" maxlength="2000" required rows="7"></textarea></label><input type="hidden" name="sourcePage" value="/contact"><input type="hidden" name="turnstileToken"><div id="contact-turnstile" class="turnstile-slot"></div><button class="button button-primary" type="submit">Send message</button><p class="form-status" role="status"></p></form>`;
 }
 
 export function bindContentPage(path: string): void {
@@ -145,6 +146,27 @@ export function bindContentPage(path: string): void {
         status.textContent = "The contact API is unavailable locally. Please try again after Cloudflare deployment.";
       }
     });
+    const container = document.querySelector<HTMLElement>("#contact-turnstile");
+    const token = document.querySelector<HTMLInputElement>('#contact-form input[name="turnstileToken"]');
+    if (container && token) void mountTurnstile(container, "contact", token);
+  }
+  if (path === "/leaderboards") void loadLeaderboards();
+}
+
+async function loadLeaderboards(): Promise<void> {
+  const root = document.querySelector<HTMLElement>("#leaderboard-board");
+  if (!root) return;
+  try {
+    const response = await fetch("/api/leaderboards", { cache: "no-store" });
+    if (!response.ok) throw new Error("Leaderboard unavailable");
+    const data = await response.json() as { entries: Array<{ labelName: string; playerName?: string; score: number; week: number; scenario: string; createdAt: string }> };
+    if (!data.entries.length) {
+      root.innerHTML = `<div class="empty-state"><span>◎</span><h2>The first season is open.</h2><p>Sign in, sync a career, and publish its verified score from the game sidebar.</p><a class="button button-primary" href="/play?account=1" data-link>Create a cloud career</a></div>`;
+      return;
+    }
+    root.innerHTML = `<div class="public-chart"><div class="public-chart-head"><span>Rank</span><span>Label</span><span>Scenario</span><span>Week</span><span>Score</span></div>${data.entries.map((entry, index) => `<article><b>#${index + 1}</b><div><strong>${escapeHtml(entry.labelName)}</strong><small>${escapeHtml(entry.playerName || "Independent manager")}</small></div><span>${escapeHtml(entry.scenario)}</span><span>W${entry.week}</span><em>${new Intl.NumberFormat("en").format(entry.score)}</em></article>`).join("")}</div>`;
+  } catch {
+    root.innerHTML = `<div class="empty-state"><span>!</span><h2>Leaderboard temporarily unavailable.</h2><p>The game remains playable and cloud careers remain private.</p></div>`;
   }
 }
 

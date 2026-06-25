@@ -4,6 +4,7 @@ coverage/
 .wrangler/
 .dev.vars
 .env
+.env.local
 *.log
 .DS_Store
 Thumbs.db

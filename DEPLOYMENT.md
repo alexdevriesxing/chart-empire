@@ -37,9 +37,10 @@ Create a Turnstile widget for the production domain. Configure the public site k
 
 - `TURNSTILE_SECRET_KEY`
 - `SESSION_SECRET`
+- `PASSWORD_PEPPER`
 - `ADMIN_SECRET`
 
-Do not enable account UI, cloud saves, or uploads until authentication is implemented and reviewed.
+Use independent cryptographically random values for the three application secrets. Never reuse the Turnstile secret as the password pepper or session secret.
 
 ## 4. Domain and content
 
@@ -57,10 +58,14 @@ Test:
 3. Guest start, save, reload, export, and import
 4. Scouting, signing, recording, release, campaign, weekly resolution, charts, and finance
 5. Contact with a valid Turnstile token
-6. Consent rejection and acceptance
-7. Song of the Week fallback and enabled embed
-8. Mobile navigation and game menu
-9. Lighthouse performance/accessibility/SEO
-10. Preview and production deployments
+6. Registration, login, logout, account export, and account deletion
+7. Cloud career create/load/update/delete and cross-device login
+8. R2 PNG/JPEG/WebP logo upload and retrieval
+9. Server-verified leaderboard publishing
+10. Consent rejection and acceptance
+11. Song of the Week fallback and enabled embed
+12. Mobile navigation and game menu
+13. Lighthouse performance/accessibility/SEO
+14. Preview and production deployments
 
 `npm run cf:deploy` can publish `dist` manually, but Git integration is the recommended production path.

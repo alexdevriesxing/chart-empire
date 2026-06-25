@@ -50,4 +50,32 @@ describe("SimulationEngine", () => {
     const report = game.endWeek();
     expect(report.expenses).toBe(artist.weeklyCost);
   });
+
+  it("supports hiring staff, touring, trends, and event choices", () => {
+    const game = career(998);
+    const artist = game.scoutCandidates()[0]!;
+    game.signArtist(artist.id);
+    const staff = game.staffCandidates().find((candidate) => candidate.weeklyCost * 2 < game.state.cash)!;
+    game.hireStaff(staff.id);
+    game.bookTour(artist.id, "club");
+    game.state.pendingEvent = {
+      id: "test-event",
+      title: "Test event",
+      description: "A bounded test decision.",
+      category: "opportunity",
+      choices: [{ id: "accept", label: "Accept", cash: 0, reputation: 2, morale: 1, buzz: 3 }]
+    };
+    game.resolveEvent("accept");
+    game.endWeek();
+    expect(game.state.staff).toHaveLength(1);
+    expect(game.state.tours.length).toBeLessThanOrEqual(1);
+    expect(game.state.socialFeed).toHaveLength(1);
+    expect(game.state.pendingEvent === null || game.state.pendingEvent.choices.length > 0).toBe(true);
+  });
+
+  it("configures challenge starts", () => {
+    const game = SimulationEngine.create({ labelName: "Tiny Signal", logo: "logo-cyan", market: "London", strategy: "indie", challengeId: "tiny-budget", seed: 88 });
+    expect(game.state.cash).toBe(25_000);
+    expect(game.state.artists.some((artist) => artist.signed)).toBe(true);
+  });
 });

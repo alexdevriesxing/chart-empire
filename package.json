@@ -6,7 +6,7 @@
   "description": "Chart Empire: The Music Label Manager — a Cloudflare-ready Phaser 4 management game.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.app.json --noEmit && vite build",
+    "build": "tsc -p tsconfig.app.json --noEmit && vite build && node scripts/generate-routes.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",

@@ -23,10 +23,18 @@ export function bootGame(container: HTMLElement): Phaser.Game {
       roundPixels: false
     }
   });
+  document.addEventListener("visibilitychange", handleVisibility);
   return instance;
 }
 
 export function destroyGame(): void {
+  document.removeEventListener("visibilitychange", handleVisibility);
   instance?.destroy(true);
   instance = null;
+}
+
+function handleVisibility(): void {
+  if (!instance) return;
+  if (document.hidden) instance.loop.sleep();
+  else instance.loop.wake();
 }

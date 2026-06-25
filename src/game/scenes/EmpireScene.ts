@@ -36,7 +36,9 @@ export class EmpireScene extends Phaser.Scene {
       const bar = this.add.rectangle(0, 0, 7, 28 + (index % 5) * 12, index % 3 === 0 ? 0xff2e88 : index % 3 === 1 ? 0x18e0ff : 0x7c3aed, 0.18).setOrigin(0.5, 1);
       this.glowBars.push(bar);
     }
-    for (let index = 0; index < 18; index += 1) {
+    const quality = localStorage.getItem("chart-empire-quality") || "balanced";
+    const particleCount = quality === "high" ? 26 : quality === "battery" ? 8 : 18;
+    for (let index = 0; index < particleCount; index += 1) {
       const particle = this.add.circle(
         Math.random() * this.scale.width,
         Math.random() * this.scale.height,

@@ -8,6 +8,7 @@ export interface Env {
   ALLOWED_ORIGIN?: string;
   TURNSTILE_SECRET_KEY?: string;
   SESSION_SECRET?: string;
+  PASSWORD_PEPPER?: string;
   ADMIN_SECRET?: string;
 }
 
@@ -29,6 +30,12 @@ export async function readJson<T>(request: Request, maxBytes = 16_384): Promise<
 
 export function cleanText(value: unknown, maxLength: number): string {
   return String(value || "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+export function normalizeEmail(value: unknown): string {
+  const email = cleanText(value, 160).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(400, "Enter a valid email address.");
+  return email;
 }
 
 export async function rateLimit(env: Env, request: Request, bucket: string, limit: number, seconds: number): Promise<void> {

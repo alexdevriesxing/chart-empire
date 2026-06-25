@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aiLabels, generateArtists, publications, radioNetworks, streamingPlatforms } from "../src/game/data/content";
+import { aiLabels, challengeScenarios, eventCatalog, generateArtists, publications, radioNetworks, streamingPlatforms, trends } from "../src/game/data/content";
 
 describe("fictional content", () => {
   it("generates at least 75 unique artist names", () => {
@@ -13,6 +13,9 @@ describe("fictional content", () => {
     expect(publications.length).toBeGreaterThanOrEqual(12);
     expect(radioNetworks.length).toBeGreaterThanOrEqual(12);
     expect(streamingPlatforms.length).toBeGreaterThanOrEqual(10);
+    expect(eventCatalog.length).toBeGreaterThanOrEqual(150);
+    expect(trends.length).toBeGreaterThanOrEqual(25);
+    expect(challengeScenarios.length).toBeGreaterThanOrEqual(10);
   });
 
   it("does not generate forbidden real platform names", () => {
