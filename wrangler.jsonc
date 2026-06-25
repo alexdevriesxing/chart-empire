@@ -5,19 +5,19 @@
   "pages_build_output_dir": "./dist",
   "vars": {
     "APP_ENV": "production",
-    "ALLOWED_ORIGIN": "https://chart-empire.example.com"
+    "ALLOWED_ORIGIN": "https://chart-empire.pages.dev"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "chart-empire-db",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "f1158164-1380-4eaa-a2c0-207b06c9a3ee",
       "migrations_dir": "migrations"
     }
   ],
   "kv_namespaces": [
-    { "binding": "KV_CONFIG", "id": "REPLACE_WITH_CONFIG_KV_ID" },
-    { "binding": "KV_RATE_LIMIT", "id": "REPLACE_WITH_RATE_LIMIT_KV_ID" }
+    { "binding": "KV_CONFIG", "id": "a8b326472e854ccd8368613c14460192" },
+    { "binding": "KV_RATE_LIMIT", "id": "e35d65def01244d79a29ef1c7be6424a" }
   ],
   "r2_buckets": [
     { "binding": "R2_ASSETS", "bucket_name": "chart-empire-assets" }
