@@ -1,0 +1,12 @@
+{
+  "name": "Chart Empire: The Music Label Manager",
+  "short_name": "Chart Empire",
+  "description": "Build a fictional music label and rule the charts.",
+  "start_url": "/play",
+  "display": "standalone",
+  "background_color": "#080b1a",
+  "theme_color": "#080b1a",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

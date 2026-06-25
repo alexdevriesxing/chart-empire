@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chart-empire",
+  "compatibility_date": "2026-06-01",
+  "pages_build_output_dir": "./dist",
+  "vars": {
+    "APP_ENV": "production",
+    "ALLOWED_ORIGIN": "https://chart-empire.example.com"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "chart-empire-db",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    { "binding": "KV_CONFIG", "id": "REPLACE_WITH_CONFIG_KV_ID" },
+    { "binding": "KV_RATE_LIMIT", "id": "REPLACE_WITH_RATE_LIMIT_KV_ID" }
+  ],
+  "r2_buckets": [
+    { "binding": "R2_ASSETS", "bucket_name": "chart-empire-assets" }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "SAVE_QUEUE", "queue": "chart-empire-save-jobs" }
+    ]
+  }
+}
