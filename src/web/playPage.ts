@@ -193,6 +193,69 @@ function renderGame(): void {
         vertical-align: middle;
         margin-left: 6px;
       }
+      .event-decision {
+        background: linear-gradient(145deg, #0e122b, #12183a);
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: slide-in 0.4s ease-out;
+      }
+      @keyframes slide-in {
+        from { transform: translateY(15px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .event-decision.crisis {
+        border-color: var(--color-danger);
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0.25);
+      }
+      .event-decision.opportunity {
+        border-color: var(--color-emerald);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+      }
+      .event-decision h2 {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .event-decision span {
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-block;
+      }
+      .event-decision.crisis span {
+        background: rgba(220, 53, 69, 0.15);
+        color: var(--color-danger);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+      }
+      .event-decision.opportunity span {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--color-emerald);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+      .event-decision button {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        padding: 0.8rem 1.2rem;
+        margin-top: 0.6rem;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.2s ease;
+        width: 100%;
+      }
+      .event-decision button:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--color-text);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
     </style>
     <div class="game-shell">
       <aside class="game-sidebar">

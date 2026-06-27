@@ -225,6 +225,11 @@ export class SimulationEngine {
         artist.weeklyCost = Math.round(artist.weeklyCost * 1.25);
       }
     }
+    if (choiceId === "choice-accept-advance") {
+      for (const artist of this.state.artists.filter(a => a.signed)) {
+        artist.royaltyRate = Math.min(60, (artist.royaltyRate || 20) + 10);
+      }
+    }
 
     this.state.cash += choice.cash;
     this.state.reputation = clamp(this.state.reputation + choice.reputation);
@@ -882,6 +887,126 @@ export class SimulationEngine {
   }
 
   private createEvent(): PendingEvent {
+    const signed = this.state.artists.filter(a => a.signed);
+    const released = this.state.songs.filter(s => s.status === "released");
+    const hasActiveTour = this.state.tours.length > 0;
+
+    // A. Cash Crash Advance Event
+    if (this.state.cash < 15000 && this.rng.next() < 0.40) {
+      return {
+        id: "event-advance-" + crypto.randomUUID(),
+        title: "Emergency Distributor Advance",
+        description: "Your label's cash reserves are dangerously low. A major digital distributor has offered an immediate €50,000 advance in exchange for a permanent +10% royalty rate penalty on your catalog.",
+        category: "crisis",
+        choices: [
+          {
+            id: "choice-accept-advance",
+            label: "Accept Advance (+€50K Cash, +10% Royalty Rate for signed artists)",
+            cash: 50000,
+            reputation: -5,
+            morale: 0,
+            buzz: 0
+          },
+          {
+            id: "choice-refuse-advance",
+            label: "Refuse Advance (Maintain independent control, -10 Reputation)",
+            cash: 0,
+            reputation: -10,
+            morale: 5,
+            buzz: 0
+          }
+        ]
+      };
+    }
+
+    // B. Superstar Feature Request
+    const starArtist = signed.find(a => a.buzz > 75);
+    if (starArtist && this.rng.next() < 0.35) {
+      return {
+        id: "event-feature-" + crypto.randomUUID(),
+        title: `${starArtist.name} Feature Offer`,
+        description: `A rival label's superstar wants to record a guest feature with ${starArtist.name}. It will boost publicity but costs €20,000 in mixing fees and clearance overhead.`,
+        category: "opportunity",
+        choices: [
+          {
+            id: "choice-accept-feature",
+            label: "Approve Collab (Spend €20K, Artist Buzz +20, Appeal +15)",
+            cash: -20000,
+            reputation: 5,
+            morale: 15,
+            buzz: 20
+          },
+          {
+            id: "choice-refuse-feature",
+            label: "Decline Collab (Save money, focus on solo album)",
+            cash: 0,
+            reputation: 0,
+            morale: 5,
+            buzz: -5
+          }
+        ]
+      };
+    }
+
+    // C. Touring Scandal
+    if (hasActiveTour && this.rng.next() < 0.30) {
+      const tour = this.state.tours[0]!;
+      const artist = this.state.artists.find(a => a.id === tour.artistId)!;
+      return {
+        id: "event-scandal-" + crypto.randomUUID(),
+        title: `Touring Scandal: ${artist.name}`,
+        description: `During the ${tour.name} run, hotel security caught members of the crew causing damage. Tabloids are asking for comments.`,
+        category: "crisis",
+        choices: [
+          {
+            id: "choice-pay-scandal",
+            label: "Pay security damages & settle privately (Spend €10K, preserve Reputation)",
+            cash: -10000,
+            reputation: 3,
+            morale: 10,
+            buzz: 0
+          },
+          {
+            id: "choice-ignore-scandal",
+            label: "Let the press run the story (Earn Buzz +20, lose -15 Reputation)",
+            cash: 0,
+            reputation: -15,
+            morale: 5,
+            buzz: 20
+          }
+        ]
+      };
+    }
+
+    // D. Gold Celebration Party
+    const hasCerts = released.some(s => s.certification);
+    if (hasCerts && this.rng.next() < 0.25) {
+      return {
+        id: "event-gala-" + crypto.randomUUID(),
+        title: "Gold Certification Gala",
+        description: "Your catalog's success has earned the label industry acclaim. You can host a lavish celebratory gala to build goodwill and network with key tastemakers.",
+        category: "opportunity",
+        choices: [
+          {
+            id: "choice-host-gala",
+            label: "Host Lavish Gala (Spend €15K, Roster Morale +25, Reputation +10)",
+            cash: -15000,
+            reputation: 10,
+            morale: 25,
+            buzz: 10
+          },
+          {
+            id: "choice-skip-gala",
+            label: "Skip Party (Save funds, roster remains focused)",
+            cash: 0,
+            reputation: -2,
+            morale: 0,
+            buzz: 0
+          }
+        ]
+      };
+    }
+
     const template = this.rng.pick(eventCatalog);
     return { ...template, id: crypto.randomUUID(), choices: template.choices.map((choice) => ({ ...choice })) };
   }
