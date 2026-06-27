@@ -40,11 +40,16 @@ export function footer(): string {
           </a>
         </div>
       </div>
-      <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 2rem; border-top: 1px solid var(--color-border); padding-top: 1rem; width: 100%;">
-        <div class="footer-links" style="display: flex; gap: 15px;"><a href="/privacy" data-link>Privacy</a><a href="/cookies" data-link>Cookies</a><a href="/terms" data-link>Terms</a><a href="/contact" data-link>Contact</a></div>
-        <div class="copyright" style="font-size: 0.85rem; color: var(--color-muted);">
-          &copy; 2026 by <a href="https://www.firedragoninteractive.com" target="_blank" rel="noopener" style="color: var(--color-text); text-decoration: none; font-weight: 600;">Fire Dragon Interactive</a>. All rights reserved.
+      <div class="footer-bottom" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--color-border); padding-top: 1rem; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; width: 100%;">
+          <div class="footer-links" style="display: flex; gap: 15px;"><a href="/privacy" data-link>Privacy Policy</a><a href="/terms" data-link>Terms</a><a href="/contact" data-link>Contact</a></div>
+          <div class="copyright" style="font-size: 0.85rem; color: var(--color-muted);">
+            &copy; 2026 by <a href="https://www.firedragoninteractive.com" target="_blank" rel="noopener" style="color: var(--color-text); text-decoration: none; font-weight: 600;">Fire Dragon Interactive</a>. All rights reserved.
+          </div>
         </div>
+        <p style="font-size: 0.8rem; color: var(--color-muted); line-height: 1.4; margin: 0; max-width: 900px;">
+          <strong>Privacy Notice:</strong> We keep Chart Empire free thanks to advertising. We do not collect any personal information, nor will we sell any.
+        </p>
       </div>
     </footer>`;
 }

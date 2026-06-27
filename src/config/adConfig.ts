@@ -1,5 +1,5 @@
 export const adConfig = {
-  enabled: import.meta.env.VITE_ADSTERRA_ENABLED === "true",
+  enabled: true,
   devMode: import.meta.env.VITE_ADSTERRA_DEV_MODE !== "false",
   homeTopBannerId: import.meta.env.VITE_ADSTERRA_BANNER_ID || "",
   homeNativeId: import.meta.env.VITE_ADSTERRA_NATIVE_ID || "",
