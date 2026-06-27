@@ -6,7 +6,7 @@ export function header(): string {
   return `
     <header class="site-header">
       <a class="brand" href="/" data-link aria-label="Chart Empire home">
-        <span class="brand-mark">CE</span><span>Chart Empire</span>
+        <img src="/images/logo.png" alt="Chart Empire Logo" class="brand-logo-img" style="width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); object-fit: cover; margin-right: 8px; display: inline-block; vertical-align: middle;"><span>Chart Empire</span>
       </a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
       <nav id="primary-nav" class="primary-nav" aria-label="Primary">
@@ -21,7 +21,7 @@ export function header(): string {
 export function footer(): string {
   return `
     <footer class="site-footer">
-      <div><a class="brand" href="/" data-link><span class="brand-mark">CE</span><span>Chart Empire</span></a>
+      <div><a class="brand" href="/" data-link><img src="/images/logo.png" alt="Chart Empire Logo" class="brand-logo-img" style="width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); object-fit: cover; margin-right: 8px; display: inline-block; vertical-align: middle;"><span>Chart Empire</span></a>
       <p>A fictional music-industry simulation. Built for strategy, drama, and replayability.</p></div>
       <div class="footer-links"><a href="/privacy" data-link>Privacy</a><a href="/cookies" data-link>Cookies</a><a href="/terms" data-link>Terms</a><a href="/contact" data-link>Contact</a></div>
       <div class="partner-links"><a href="${siteConfig.xingRecordsUrl}" target="_blank" rel="noopener">Xing Records ↗</a><a href="${siteConfig.indieMusicPromotionUrl}" target="_blank" rel="noopener">Indie Music Promotion ↗</a></div>

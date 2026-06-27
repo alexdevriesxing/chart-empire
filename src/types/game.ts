@@ -30,6 +30,7 @@ export interface Artist {
   signed: boolean;
   contractWeeks: number;
   royaltyRate: number;
+  spotifyId: string | null;
 }
 
 export interface Song {
@@ -43,6 +44,9 @@ export interface Song {
   radioSpins: number;
   chartPosition?: number;
   peakPosition?: number;
+  videoQuality?: "diy" | "visualizer" | "cinematic" | "cgi" | null;
+  videoViews?: number;
+  certification?: "gold" | "platinum" | "diamond" | null;
 }
 
 export interface Campaign {
@@ -97,6 +101,13 @@ export interface Tour {
   revenue: number;
 }
 
+export interface ActiveLoan {
+  id: string;
+  principal: number;
+  weeklyRepayment: number;
+  weeksRemaining: number;
+}
+
 export interface PendingEvent {
   id: string;
   title: string;
@@ -149,6 +160,41 @@ export interface GameState {
   sandbox: boolean;
   aiAggression: number;
   trendVolatility: number;
+  insolvent: boolean;
+  debtWeeks: number;
+  loans: ActiveLoan[];
+  upgrades: string[];
+  vinyls: VinylInventory[];
+  merch: MerchCampaign[];
+  activeBuyout: BuyoutOffer | null;
+  awards: string[];
+  fanClubFunding: "none" | "street" | "app" | "party";
+  hallOfFame: string[];
+  rivalSpecialties: Record<string, string>;
+}
+
+export interface VinylInventory {
+  songId: string;
+  stock: number;
+  ordered: number;
+  unitCost: number;
+  sold: number;
+  revenue: number;
+}
+
+export interface MerchCampaign {
+  artistId: string;
+  active: boolean;
+  weeksRemaining: number;
+  price: number;
+}
+
+export interface BuyoutOffer {
+  id: string;
+  type: "buy" | "sell";
+  artistId: string;
+  label: string;
+  price: number;
 }
 
 export interface NewGameOptions {

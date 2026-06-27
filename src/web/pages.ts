@@ -25,11 +25,16 @@ export function homePage(): string {
         <div class="hero-proof"><span>✓ No download</span><span>✓ Guest saves</span><span>✓ Deep weekly simulation</span></div>
       </div>
       <div class="hero-dashboard" aria-label="Game preview">
-        <div class="preview-top"><span>GLOBAL PULSE</span><span class="live-dot">LIVE WEEK 18</span></div>
-        <div class="preview-chart"><b>#1</b><div><strong>Neon Hearts</strong><small>Velora Vane · Your label</small></div><span class="chart-up">▲ 4</span></div>
-        <div class="preview-metrics"><div><small>WEEKLY STREAMS</small><b>4.8M</b><span>+28.4%</span></div><div><small>FANBASE</small><b>186K</b><span>+12.1%</span></div></div>
-        <div class="preview-artist"><div class="avatar">VV</div><div><small>BREAKOUT MOMENT</small><strong>Velora Vane</strong><span>Synth Soul · Morale 86%</span></div></div>
-        <div class="notification">✦ <span><b>Festival offer received</b><small>Electric Horizon wants your headliner.</small></span></div>
+        <div class="browser-header">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <span class="address-bar">chart-empire.com/play</span>
+        </div>
+        <div class="hero-image-wrap">
+          <img src="/images/chart_empire_hero.png" alt="Chart Empire Game Preview">
+          <div class="overlay-stats">
+            <div class="notification">✦ <span><b>Festival offer received</b><small>Electric Horizon wants your headliner.</small></span></div>
+          </div>
+        </div>
       </div>
     </section>
     ${adSlot("Premium launch sponsor", "home")}

@@ -45,26 +45,106 @@ export const radioNetworks = [
 ] as const;
 
 export const streamingPlatforms = [
-  "LoopCloud", "Amply", "Orbit Play", "Prism Stream", "EchoDeck",
-  "MuseFlow", "Current", "VibeRail", "Playloom", "SonicShelf"
+  "SoundWave", "Nebula Play", "BeatStream", "LoopCloud", "Amply",
+  "Orbit Play", "Prism Stream", "EchoDeck", "MuseFlow", "Current"
 ] as const;
 
-const first = ["Velora", "Mika", "Juno", "Riven", "Amara", "Cassian", "Nova", "Imani", "Elio", "Zuri", "Soren", "Nia", "Roux", "Tala", "Kairo"];
-const last = ["Vane", "Arcade", "Sol", "Monroe", "Vale", "Kestrel", "Lux", "Marrow", "Bloom", "Raine", "Mosaic", "North"];
-const bands = ["The Glass Satellites", "Midnight Arcade", "Paper Comets", "Electric Daisies", "Velvet Antennas", "Chrome Gardens", "Static Parade", "The Wild Frequencies"];
+const first = [
+  "Velora", "Mika", "Juno", "Riven", "Amara", "Cassian", "Nova", "Imani", "Elio", "Zuri", "Soren", "Nia", "Roux", "Tala", "Kairo",
+  "Kai", "Zev", "Ayla", "Ezra", "Selah", "Ronan", "Maeve", "Silas", "Lyra", "Kaelen", "Faye", "Arlo", "Dahlia", "Rian", "Nesta",
+  "Bram", "Orla", "Bode", "Freya", "Rhys", "Lumi", "Oren", "Saskia", "Koa", "Thalia", "Zephyr", "Cleo", "Dax", "Isla", "Nox",
+  "Cove", "Zina", "Remy", "Vega", "Aiden", "Mabel", "Tate", "Indie"
+];
+const last = [
+  "Vane", "Arcade", "Sol", "Monroe", "Vale", "Kestrel", "Lux", "Marrow", "Bloom", "Raine", "Mosaic", "North",
+  "Sunder", "Vander", "Cross", "Wilder", "Wild", "Stark", "Sterling", "Haze", "Gale", "Steele", "Saber", "Rivers",
+  "Moss", "Stone", "Storm", "Vance", "Gentry", "Falk", "Thorne", "Ash", "Frost", "Hart", "Fox", "Knox", "Lowe",
+  "Meadow", "Echo", "Winter", "Hawthorne", "Crest", "Dune", "Spire", "Hollow", "Ridge", "Bay", "Flint"
+];
+const bands = [
+  "The Glass Satellites", "Midnight Arcade", "Paper Comets", "Electric Daisies", "Velvet Antennas", "Chrome Gardens", "Static Parade", "The Wild Frequencies",
+  "Neon Rebels", "Solar Flares", "Phantom Echoes", "Subway Ghosts", "Crimson Tide", "Stardust Syndicate", "Electric Sleepwalkers", "The Velvet Heist",
+  "Static Dreamers", "Lunar Arcades", "Digital Orphans", "Acid Horizon", "Vapor Waves", "The Chrome Lotus", "Shadow Puppets", "Retro Grade",
+  "Neon Jungle", "Golden Hours", "Echo Chamber", "Future Cults", "Silver Fountains", "The Electric Horizon", "Starry Eyes", "Vapor Kings",
+  "Diamond Dogs", "The Night Walkers", "Cyber Symphony", "The Noise Cartel", "Analog Heart", "Glitch Theory"
+];
+
+const xingArtists = [
+  { name: "Ari Jamzz", genre: "Neon Pop" },
+  { name: "MC Sean", genre: "Cloud Rap" },
+  { name: "Angel Eyes", genre: "Synth Soul" },
+  { name: "Aoleon Askari", genre: "Dream R&B" },
+  { name: "Eric Devine", genre: "Future Gospel" },
+  { name: "MC Delta", genre: "Cloud Rap" },
+  { name: "The Mike David Project", genre: "Synth Soul" },
+  { name: "Ale", genre: "Indie Dance" },
+  { name: "Grandmaster Old Skool", genre: "Cloud Rap" },
+  { name: "Starfire Rainbow Jellybean", genre: "Neon Pop" },
+  { name: "Bruce Thunderbollocks & The Groove Express", genre: "Alt-Rock" },
+  { name: "Dirty Latin Funk Experience", genre: "Afro-Fusion" },
+  { name: "The Wizard Who Turns Stars Into Rings", genre: "Indie Dance" },
+  { name: "The Canvas", genre: "Electro Folk" },
+  { name: "Pressure", genre: "Dream R&B" },
+  { name: "Chris Case", genre: "Dream R&B" },
+  { name: "Freddy Zucchet & Universe Club", genre: "Club Jazz" },
+  { name: "Carmen Angela Estudiantes", genre: "Club Jazz" },
+  { name: "Tommy King", genre: "Electro Folk" },
+  { name: "Diaz Fuego", genre: "Afro-Fusion" },
+  { name: "Jordan Devine", genre: "Synth Soul" },
+  { name: "Mary R. Thompson", genre: "Club Jazz" },
+  { name: "Billy Simons", genre: "Neon Pop" },
+  { name: "Aby Robbens", genre: "Neon Pop" },
+  { name: "Jacques LePouff", genre: "Club Jazz" },
+  { name: "Stevie Nitwit", genre: "Alt-Rock" },
+  { name: "Sapphire Reign", genre: "Neon Pop" },
+  { name: "Phat LX", genre: "Indie Dance" },
+  { name: "Hope40mill", genre: "Cloud Rap" },
+  { name: "Juan Jimenez", genre: "Afro-Fusion" },
+  { name: "Autumn Marie", genre: "Electro Folk" },
+  { name: "Casper Cruz", genre: "Neon Pop" },
+  { name: "Russell Prince", genre: "Synth Soul" },
+  { name: "Kasumi Sakura", genre: "Hyper Ballad" },
+  { name: "Nova7", genre: "Desert Disco" },
+  { name: "Starlit Avenue", genre: "Hyper Ballad" },
+  { name: "Deena Washington", genre: "Neon Pop" },
+  { name: "Equinox", genre: "Alt-Rock" },
+  { name: "Harry Keegan", genre: "Alt-Rock" },
+  { name: "Big Mac", genre: "Cloud Rap" },
+  { name: "Disco Dave Esposito", genre: "Desert Disco" },
+  { name: "The Reflex Crew", genre: "Indie Dance" },
+  { name: "Disco Henkie", genre: "Desert Disco" },
+  { name: "Martin F. Strauss", genre: "Hyper Ballad" },
+  { name: "M-Pathic & Friends", genre: "Synth Soul" },
+  { name: "X-Pressive NRG", genre: "Indie Dance" },
+  { name: "Vitamins for your Soul", genre: "Synth Soul" },
+  { name: "Ivy Luo", genre: "Hyper Ballad" },
+  { name: "Diah Ratnasari", genre: "Hyper Ballad" },
+  { name: "Badrick Campbell", genre: "Afro-Fusion" },
+  { name: "Billy Bush", genre: "Electro Folk" },
+  { name: "Christian Jones", genre: "Future Gospel" },
+  { name: "Johnny Wu", genre: "Neon Pop" }
+];
 
 export function generateArtists(seed = 2048, count = 75): Artist[] {
   const rng = new RNG(seed);
   const used = new Set<string>();
   const artists: Artist[] = [];
   for (let index = 0; index < count; index += 1) {
-    let name = rng.next() < 0.24 ? rng.pick(bands) : `${rng.pick(first)} ${rng.pick(last)}`;
+    let name = "";
+    let genre = "";
+    if (index < xingArtists.length) {
+      name = xingArtists[index]!.name;
+      genre = xingArtists[index]!.genre;
+    } else {
+      name = rng.next() < 0.24 ? rng.pick(bands) : `${rng.pick(first)} ${rng.pick(last)}`;
+      genre = rng.pick(genres);
+    }
     while (used.has(name)) name = `${name} ${rng.int(2, 99)}`;
     used.add(name);
     artists.push({
       id: `artist-${index + 1}`,
       name,
-      genre: rng.pick(genres),
+      genre,
       market: rng.pick(markets),
       talent: rng.int(45, 92),
       appeal: rng.int(35, 95),
@@ -75,7 +155,8 @@ export function generateArtists(seed = 2048, count = 75): Artist[] {
       weeklyCost: rng.int(1800, 9200),
       signed: false,
       contractWeeks: 0,
-      royaltyRate: rng.int(14, 28)
+      royaltyRate: rng.int(14, 28),
+      spotifyId: null
     });
   }
   return artists;
