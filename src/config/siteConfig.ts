@@ -1,6 +1,6 @@
 export const siteConfig = {
   title: import.meta.env.VITE_GAME_TITLE || "Chart Empire",
-  siteUrl: import.meta.env.VITE_SITE_URL || window.location.origin,
+  siteUrl: import.meta.env.VITE_SITE_URL || "https://www.chartempiregame.com",
   xingRecordsUrl: import.meta.env.VITE_XING_RECORDS_URL || "https://www.xingrecords.com",
   indieMusicPromotionUrl: import.meta.env.VITE_INDIE_MUSIC_PROMOTION_URL || "https://www.indiemusicpromotion.com",
   turnstileSiteKey: import.meta.env.VITE_TURNSTILE_SITE_KEY || "",

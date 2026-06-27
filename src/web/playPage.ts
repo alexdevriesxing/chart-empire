@@ -1,4 +1,4 @@
-import { adSlot, escapeHtml, header } from "./components";
+import { adSlot, escapeHtml, header, sidebarSkyscraperAd, triggerAdsterraLoads } from "./components";
 import { challengeScenarios, markets, strategies } from "../game/data/content";
 import { SimulationEngine } from "../game/systems/SimulationEngine";
 import { SaveSystem } from "../game/systems/SaveSystem";
@@ -263,12 +263,18 @@ function renderGame(): void {
         <nav aria-label="Game sections">${navButton("dashboard", "⌂", "Dashboard")}${navButton("scout", "⌕", "Scout")}${navButton("roster", "★", "Artists")}${navButton("studio", "◉", "Studio")}${navButton("marketing", "↗", "Campaigns")}${navButton("touring", "◆", "Touring")}${navButton("staff", "♟", "Staff")}${navButton("charts", "▥", "Charts")}${navButton("finance", "€", "Finance")}</nav>
         <div class="sidebar-bottom">${accountUser ? `<button data-game-action="sync-cloud">↻ Sync cloud</button><button data-game-action="publish-score">↗ Publish score</button><label class="import-label">▣ Upload logo<input type="file" accept="image/png,image/jpeg,image/webp" data-logo-upload></label><button data-game-action="account-hub">☁ Cloud careers</button><span>${escapeHtml(accountUser.displayName)} · ${cloudSyncState}</span>` : `<button data-game-action="account">☁ Enable cloud saves</button><button data-game-action="export">⇩ Export save</button><label class="import-label">⇧ Import save<input type="file" accept=".json,application/json" data-game-import></label><span>Guest save · this device</span>`}</div>
       </aside>
-      <section class="game-main">
+      <section class="game-main" style="display: flex; flex-direction: column;">
         <header class="game-topbar"><button class="mobile-game-menu" data-game-action="toggle-menu" aria-label="Toggle game menu">☰</button><div class="week-chip"><span>WEEK</span><b>${state.week}</b></div><div class="resource"><small>Cash</small><b class="${state.cash < 0 ? "danger" : ""}">${formatMoney(state.cash)}</b></div><div class="resource"><small>Fans</small><b>${formatNumber(state.fanbase)}</b></div><div class="resource"><small>Reputation</small><b>${state.reputation}</b></div><label class="quality-control"><span>Quality</span><select data-quality><option value="high" ${quality() === "high" ? "selected" : ""}>High</option><option value="balanced" ${quality() === "balanced" ? "selected" : ""}>Balanced</option><option value="battery" ${quality() === "battery" ? "selected" : ""}>Battery</option></select></label><button class="audio-toggle" data-game-action="mute" aria-label="${audioService.muted ? "Unmute game audio" : "Mute game audio"}">${audioService.muted ? "♪̸" : "♪"}</button><button class="button button-primary advance-button" data-game-action="end-week">Advance week →</button></header>
-        <div class="game-content">${renderView(currentView, signed)}</div>
+        <div class="game-layout-container" style="display: flex; flex: 1; min-height: 0;">
+          <div class="game-content" style="flex: 1; min-width: 0; overflow-y: auto; padding: 20px;">${renderView(currentView, signed)}</div>
+          <aside class="desktop-only-ad-sidebar" style="width: 200px; flex-shrink: 0; height: 100%; border-left: 1px solid var(--color-border); background: var(--color-background-offset);">
+            ${sidebarSkyscraperAd()}
+          </aside>
+        </div>
       </section>
     </div>
     <div id="game-toast" class="game-toast" role="status"></div>`;
+  triggerAdsterraLoads();
 }
 
 function renderView(view: GameView, signed: GameState["artists"]): string {

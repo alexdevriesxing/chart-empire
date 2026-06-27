@@ -1,7 +1,7 @@
 import "../styles/global.css";
 import "../styles/marketing.css";
 import "../styles/game.css";
-import { bindGlobalControls } from "../web/components";
+import { bindGlobalControls, triggerAdsterraLoads } from "../web/components";
 import { bindContentPage, contentPage, cookiePage, homePage, notFoundPage } from "../web/pages";
 import { playPage, setupPlayPage } from "../web/playPage";
 import { addStructuredData, applySEO } from "../web/SEO";
@@ -52,6 +52,7 @@ async function render(): Promise<void> {
   bindNavigation();
   if (path === "/play") await setupPlayPage();
   window.scrollTo({ top: 0, behavior: "instant" });
+  triggerAdsterraLoads();
 }
 
 function bindNavigation(): void {

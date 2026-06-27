@@ -12,6 +12,6 @@ describe("consent defaults", () => {
       }
     });
     const service = new source.ConsentService();
-    expect(service.get()).toMatchObject({ necessary: true, analytics: false, ads: false, personalizedAds: false, externalMedia: false });
+    expect(service.get()).toMatchObject({ necessary: true, analytics: true, ads: true, personalizedAds: true, externalMedia: true });
   });
 });

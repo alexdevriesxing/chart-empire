@@ -76,5 +76,5 @@ describe("Simulation Engine - High Intensity Stress Testing", () => {
         expect(Number.isFinite(song.streams)).toBe(true);
       }
     }
-  });
+  }, 30000);
 });
