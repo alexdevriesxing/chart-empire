@@ -1005,13 +1005,7 @@ function getArtistLogo(artist: string, genre: string): string {
   return `data:image/svg+xml;utf8,${svg}`;
 }
 
-function getPlatformLogo(platform: string): string {
-  const name = platform.toLowerCase();
-  if (name.includes("soundwave") || name.includes("sound")) return "/images/logo_soundwave.png";
-  if (name.includes("nebula") || name.includes("play")) return "/images/logo_nebulaplay.png";
-  if (name.includes("beatstream") || name.includes("beat")) return "/images/logo_beatstream.png";
-  return "/images/logo.png";
-}
+
 
 function getLabelLogo(label: string): string {
   const name = label.toLowerCase();
