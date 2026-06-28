@@ -92,31 +92,12 @@ export function triggerAdsterraLoads(): void {
   }
 
   const nativeCont = document.getElementById("container-776951a86861b9863f167c7cf03bcc3e");
-  if (nativeCont && !nativeCont.querySelector("iframe")) {
-    const iframe = document.createElement("iframe");
-    iframe.style.border = "none";
-    iframe.style.overflow = "hidden";
-    iframe.style.width = "100%";
-    iframe.style.minHeight = "250px";
-    nativeCont.appendChild(iframe);
-    
-    const doc = iframe.contentWindow?.document;
-    if (doc) {
-      doc.open();
-      doc.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>body { margin: 0; padding: 0; overflow: hidden; background: transparent; }</style>
-          </head>
-          <body>
-            <script async="async" data-cfasync="false" src="https://pl30102144.effectivecpmnetwork.com/776951a86861b9863f167c7cf03bcc3e/invoke.js"></script>
-            <div id="container-776951a86861b9863f167c7cf03bcc3e"></div>
-          </body>
-        </html>
-      `);
-      doc.close();
-    }
+  if (nativeCont && !nativeCont.querySelector("script")) {
+    const nb = document.createElement("script");
+    nb.src = "https://pl30102144.effectivecpmnetwork.com/776951a86861b9863f167c7cf03bcc3e/invoke.js";
+    nb.async = true;
+    nb.setAttribute("data-cfasync", "false");
+    nativeCont.appendChild(nb);
   }
 
   const iframeAds: Array<[string, string, number, number]> = [
@@ -137,6 +118,8 @@ export function triggerAdsterraLoads(): void {
     iframe.style.overflow = "hidden";
     iframe.style.width = `${w}px`;
     iframe.style.height = `${h}px`;
+    iframe.style.background = "transparent";
+    iframe.setAttribute("allowtransparency", "true");
     
     slot.appendChild(iframe);
     
