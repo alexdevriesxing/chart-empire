@@ -54,55 +54,34 @@ export function footer(): string {
 }
 
 export function desktopLeaderboardAd(): string {
-  return `
-    <div class="adsterra-container adsterra-728x90" style="display: flex; justify-content: center; align-items: center; padding: 15px 0; background: var(--color-background-offset); border-bottom: 1px solid var(--color-border);">
-      <div id="ad-728x90-slot"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-728x90" style="display:flex;justify-content:center;align-items:center;padding:15px 0;background:var(--color-background-offset);border-bottom:1px solid var(--color-border);"><div id="ad-728x90-slot"></div></div>`;
 }
 
 export function mobileHeaderAd(): string {
-  return `
-    <div class="adsterra-container adsterra-320x50" style="display: flex; justify-content: center; align-items: center; padding: 10px 0; background: var(--color-background-offset); border-bottom: 1px solid var(--color-border);">
-      <div id="ad-320x50-slot"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-320x50" style="display:flex;justify-content:center;align-items:center;padding:10px 0;background:var(--color-background-offset);border-bottom:1px solid var(--color-border);"><div id="ad-320x50-slot"></div></div>`;
 }
 
 export function sidebarSkyscraperAd(): string {
-  return `
-    <div class="adsterra-container adsterra-160x600" style="display: flex; flex-direction: column; align-items: center; padding: 20px 10px; background: var(--color-background-offset); border-left: 1px solid var(--color-border); height: 100%;">
-      <span style="font-size: 0.65rem; color: var(--color-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.05em;">Sponsor</span>
-      <div id="ad-160x600-slot" style="position: sticky; top: 20px;"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-160x600" style="display:flex;flex-direction:column;align-items:center;padding:20px 10px;background:var(--color-background-offset);height:100%;"><span style="font-size:0.65rem;color:var(--color-muted);text-transform:uppercase;margin-bottom:8px;font-weight:700;letter-spacing:0.05em;">Sponsor</span><div id="ad-160x600-slot" style="position:sticky;top:20px;"></div></div>`;
 }
 
 export function sidebarHalfSkyscraperAd(): string {
-  return `
-    <div class="adsterra-container adsterra-160x300" style="display: flex; flex-direction: column; align-items: center; padding: 20px 10px; background: var(--color-background-offset); border-right: 1px solid var(--color-border); height: 100%;">
-      <span style="font-size: 0.65rem; color: var(--color-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.05em;">Sponsor</span>
-      <div id="ad-160x300-slot" style="position: sticky; top: 20px;"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-160x300" style="display:flex;flex-direction:column;align-items:center;padding:20px 10px;background:var(--color-background-offset);height:100%;"><span style="font-size:0.65rem;color:var(--color-muted);text-transform:uppercase;margin-bottom:8px;font-weight:700;letter-spacing:0.05em;">Sponsor</span><div id="ad-160x300-slot" style="position:sticky;top:20px;"></div></div>`;
 }
 
 export function contentBannerAd(): string {
-  return `
-    <div class="adsterra-container adsterra-468x60" style="display: flex; justify-content: center; align-items: center; padding: 20px 0; width: 100%;">
-      <div id="ad-468x60-slot"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-468x60" style="display:flex;justify-content:center;align-items:center;padding:20px 0;width:100%;"><div id="ad-468x60-slot"></div></div>`;
 }
 
 export function mediumRectangleAd(): string {
-  return `
-    <div class="adsterra-container adsterra-300x250" style="display: flex; justify-content: center; align-items: center; padding: 20px 0; width: 100%;">
-      <div id="ad-300x250-slot"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-300x250" style="display:flex;justify-content:center;align-items:center;padding:20px 0;width:100%;"><div id="ad-300x250-slot"></div></div>`;
 }
 
 export function nativeAdContainer(): string {
-  return `
-    <div class="adsterra-container adsterra-native" style="display: flex; justify-content: center; align-items: center; padding: 20px 0; width: 100%;">
-      <div id="container-776951a86861b9863f167c7cf03bcc3e" style="width: 100%;"></div>
-    </div>`;
+  return `<div class="adsterra-container adsterra-native" style="display:flex;justify-content:center;align-items:center;padding:20px 0;width:100%;"><div id="container-776951a86861b9863f167c7cf03bcc3e" style="width:100%;"></div></div>`;
 }
+
+let adLoadCounter = 0;
 
 export function triggerAdsterraLoads(): void {
   if (!document.querySelector('script[src*="pl30102143.effectivecpmnetwork.com"]')) {
@@ -113,12 +92,31 @@ export function triggerAdsterraLoads(): void {
   }
 
   const nativeCont = document.getElementById("container-776951a86861b9863f167c7cf03bcc3e");
-  if (nativeCont && !nativeCont.querySelector("script")) {
-    const nb = document.createElement("script");
-    nb.src = "https://pl30102144.effectivecpmnetwork.com/776951a86861b9863f167c7cf03bcc3e/invoke.js";
-    nb.async = true;
-    nb.setAttribute("data-cfasync", "false");
-    nativeCont.appendChild(nb);
+  if (nativeCont && !nativeCont.querySelector("iframe")) {
+    const iframe = document.createElement("iframe");
+    iframe.style.border = "none";
+    iframe.style.overflow = "hidden";
+    iframe.style.width = "100%";
+    iframe.style.minHeight = "250px";
+    nativeCont.appendChild(iframe);
+    
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>body { margin: 0; padding: 0; overflow: hidden; background: transparent; }</style>
+          </head>
+          <body>
+            <script async="async" data-cfasync="false" src="https://pl30102144.effectivecpmnetwork.com/776951a86861b9863f167c7cf03bcc3e/invoke.js"></script>
+            <div id="container-776951a86861b9863f167c7cf03bcc3e"></div>
+          </body>
+        </html>
+      `);
+      doc.close();
+    }
   }
 
   const iframeAds: Array<[string, string, number, number]> = [
@@ -130,26 +128,43 @@ export function triggerAdsterraLoads(): void {
     ["ad-160x300-slot", "7cf28e9df908b07a19a7fc9603035405", 160, 300]
   ];
 
-  let adSequence = Promise.resolve();
-
   for (const [slotId, key, w, h] of iframeAds) {
-    adSequence = adSequence.then(() => new Promise<void>((resolve) => {
-      const slot = document.getElementById(slotId);
-      if (!slot || slot.querySelector("iframe")) { resolve(); return; }
-      (window as any).atOptions = {
-        'key': key,
-        'format': 'iframe',
-        'height': h,
-        'width': w,
-        'params': {}
-      };
-      const script = document.createElement("script");
-      script.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
-      script.setAttribute("data-cfasync", "false");
-      script.onload = () => resolve();
-      script.onerror = () => resolve();
-      slot.appendChild(script);
-    }));
+    const slot = document.getElementById(slotId);
+    if (!slot || slot.querySelector("iframe")) continue;
+    
+    const iframe = document.createElement("iframe");
+    iframe.style.border = "none";
+    iframe.style.overflow = "hidden";
+    iframe.style.width = \`\${w}px\`;
+    iframe.style.height = \`\${h}px\`;
+    
+    slot.appendChild(iframe);
+    
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>body { margin: 0; padding: 0; overflow: hidden; background: transparent; }</style>
+          </head>
+          <body>
+            <script>
+              atOptions = {
+                'key' : '\${key}',
+                'format' : 'iframe',
+                'height' : \${h},
+                'width' : \${w},
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/\${key}/invoke.js"></script>
+          </body>
+        </html>
+      `);
+      doc.close();
+    }
   }
 }
 
