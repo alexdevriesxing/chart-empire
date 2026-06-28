@@ -109,45 +109,53 @@ export function triggerAdsterraLoads(): void {
     ["ad-160x300-slot", "7cf28e9df908b07a19a7fc9603035405", 160, 300]
   ];
 
+  let delay = 0;
   for (const [slotId, key, w, h] of iframeAds) {
     const slot = document.getElementById(slotId);
     if (!slot || slot.querySelector("iframe")) continue;
     
-    const iframe = document.createElement("iframe");
-    iframe.style.border = "none";
-    iframe.style.overflow = "hidden";
-    iframe.style.width = `${w}px`;
-    iframe.style.height = `${h}px`;
-    iframe.style.background = "transparent";
-    iframe.setAttribute("allowtransparency", "true");
-    
-    slot.appendChild(iframe);
-    
-    const doc = iframe.contentWindow?.document;
-    if (doc) {
-      doc.open();
-      doc.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>body { margin: 0; padding: 0; overflow: hidden; background: transparent; }</style>
-          </head>
-          <body>
-            <script>
-              atOptions = {
-                'key' : '${key}',
-                'format' : 'iframe',
-                'height' : ${h},
-                'width' : ${w},
-                'params' : {}
-              };
-            </script>
-            <script src="https://www.highperformanceformat.com/${key}/invoke.js"></script>
-          </body>
-        </html>
-      `);
-      doc.close();
-    }
+    setTimeout(() => {
+      // Re-check in case the slot was removed from the DOM during the delay
+      const currentSlot = document.getElementById(slotId);
+      if (!currentSlot || currentSlot.querySelector("iframe")) return;
+
+      const iframe = document.createElement("iframe");
+      iframe.style.border = "none";
+      iframe.style.overflow = "hidden";
+      iframe.style.width = `${w}px`;
+      iframe.style.height = `${h}px`;
+      iframe.style.background = "transparent";
+      iframe.setAttribute("allowtransparency", "true");
+      
+      currentSlot.appendChild(iframe);
+      
+      const doc = iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>body { margin: 0; padding: 0; overflow: hidden; background: transparent; }</style>
+            </head>
+            <body>
+              <script>
+                atOptions = {
+                  'key' : '${key}',
+                  'format' : 'iframe',
+                  'height' : ${h},
+                  'width' : ${w},
+                  'params' : {}
+                };
+              </script>
+              <script src="https://www.highperformanceformat.com/${key}/invoke.js"></script>
+            </body>
+          </html>
+        `);
+        doc.close();
+      }
+    }, delay);
+    delay += 250;
   }
 }
 
