@@ -80,12 +80,18 @@ export class SimulationEngine {
         "Chrome Lotus Records": "Neon Pop",
         "Moonshot Melody Group": "Alt-Rock",
         "Northstar Audio": "Cloud Rap"
-      }
+      },
+      scoutOffset: 0,
+      chartHistory: [],
+      activeEventChains: [],
+      crisesResolved: 0,
+      totalCampaigns: 0
     });
   }
 
   scoutCandidates(): Artist[] {
-    const candidates = this.state.artists.filter((artist) => !artist.signed).slice(0, 12);
+    const offset = this.state.scoutOffset || 0;
+    const candidates = this.state.artists.filter((artist) => !artist.signed).slice(offset, offset + 12);
     const upgrades = this.state.upgrades || [];
     return candidates.map(artist => {
       let talent = artist.talent;
@@ -100,6 +106,19 @@ export class SimulationEngine {
       }
       return { ...artist, talent, appeal, buzz };
     });
+  }
+
+  refreshScout(): void {
+    const unsigned = this.state.artists.filter((a) => !a.signed);
+    const cost = 2000 + (this.state.scoutOffset || 0) * 500;
+    if (this.state.cash < cost) throw new Error(`Not enough cash to refresh scout pool (€${cost.toLocaleString()}).`);
+    if ((this.state.scoutOffset || 0) + 12 >= unsigned.length) {
+      this.state.scoutOffset = 0;
+      this.addNews("Scouting network reset to the beginning of the candidate pool.", "neutral");
+    } else {
+      this.state.scoutOffset = (this.state.scoutOffset || 0) + 12;
+    }
+    this.state.cash -= cost;
   }
 
   signArtist(artistId: string): void {
@@ -160,6 +179,7 @@ export class SimulationEngine {
     if (this.state.cash < spend) throw new Error("Not enough cash for this campaign.");
     this.state.cash -= spend;
     this.state.campaigns.push({ id: crypto.randomUUID(), songId, type, spend, startedWeek: this.state.week });
+    this.state.totalCampaigns = (this.state.totalCampaigns || 0) + 1;
     const source = type === "radio" ? this.rng.pick(radioNetworks) : type === "press" ? this.rng.pick(publications) : this.rng.pick(streamingPlatforms);
     this.addNews(`${source} picks up the ${type} campaign for “${song.title}”.`, "good");
   }
@@ -238,6 +258,25 @@ export class SimulationEngine {
       artist.buzz = clamp(artist.buzz + choice.buzz);
     }
     this.addNews(`${event.title}: ${choice.label}.`, choice.reputation >= 3 ? "good" : choice.reputation < 0 ? "danger" : "neutral");
+    if (event.category === "crisis") this.state.crisesResolved = (this.state.crisesResolved || 0) + 1;
+
+    this.state.activeEventChains ||= [];
+    if (event.id.startsWith("event-renegotiate-") && choiceId.startsWith("choice-refuse-")) {
+      const artistId = event.id.replace("event-renegotiate-", "");
+      this.state.activeEventChains.push({ id: `chain-leak-${artistId}`, triggerWeek: this.state.week + 2, payload: artistId });
+    }
+    if (event.id.startsWith("event-morale-") && choiceId.startsWith("choice-retreat-")) {
+      const artistId = event.id.replace("event-morale-", "");
+      this.state.activeEventChains.push({ id: `chain-refreshed-${artistId}`, triggerWeek: this.state.week + 3, payload: artistId });
+    }
+    if (event.id.startsWith("event-morale-") && choiceId.startsWith("choice-ignore-")) {
+      const artistId = event.id.replace("event-morale-", "");
+      this.state.activeEventChains.push({ id: `chain-walkout-${artistId}`, triggerWeek: this.state.week + 2, payload: artistId });
+    }
+    if (event.category === "opportunity" && choice.cash < -10000) {
+      this.state.activeEventChains.push({ id: `chain-investment-${this.state.week}`, triggerWeek: this.state.week + 3, payload: "investment" });
+    }
+
     this.state.pendingEvent = null;
   }
 
@@ -446,11 +485,34 @@ export class SimulationEngine {
     let fanGrowth = 0;
     const scores: Array<{ song: Song; score: number }> = [];
 
+    const expiredContracts: Artist[] = [];
+    const loyaltyDepartures: Artist[] = [];
+
     for (const artist of this.state.artists.filter((item) => item.signed)) {
       expenses += Math.round(artist.weeklyCost * (1 - Math.min(0.12, this.staffBonus("Finance") * .002)));
       artist.contractWeeks = Math.max(0, artist.contractWeeks - 1);
       artist.fatigue = clamp(artist.fatigue - 4);
       artist.morale = clamp(artist.morale + (artist.fatigue > 75 ? -4 : 1));
+
+      if (artist.contractWeeks === 0) {
+        expiredContracts.push(artist);
+      } else if (artist.loyalty < 30 && artist.morale < 40 && this.rng.next() < 0.08) {
+        loyaltyDepartures.push(artist);
+      }
+    }
+
+    for (const artist of expiredContracts) {
+      artist.signed = false;
+      artist.contractWeeks = 0;
+      this.addNews(`Contract Expired: ${artist.name}'s contract has ended. They are now a free agent.`, "neutral");
+    }
+
+    for (const artist of loyaltyDepartures) {
+      artist.signed = false;
+      artist.contractWeeks = 0;
+      artist.morale = clamp(artist.morale - 20);
+      this.addNews(`Artist Departure: ${artist.name} has left the label due to low morale and loyalty. Contract terminated early.`, "danger");
+      this.state.reputation = clamp(this.state.reputation - 2);
     }
 
     for (const staff of this.state.staff) expenses += Math.round(staff.weeklyCost * (1 - Math.min(0.08, this.staffBonus("Finance") * .001)));
@@ -530,8 +592,49 @@ export class SimulationEngine {
       const campaigns = this.state.campaigns.filter((campaign) => campaign.songId === song.id && this.state.week - campaign.startedWeek <= 3);
       const marketingBonus = this.staffBonus("Marketing") + this.staffBonus("Radio") * (campaigns.some((campaign) => campaign.type === "radio") ? 0.7 : 0);
       const trendBonus = this.state.trends.filter((trend) => trend.genre === artist.genre).reduce((sum, trend) => sum + trend.strength, 0);
-      const campaignPower = campaigns.reduce((sum, campaign) => sum + campaign.spend / 1200, 0) + marketingBonus + trendBonus;
-      
+
+      let campaignPower = marketingBonus + trendBonus;
+      let radioBoost = 0;
+      let streamsBoost = 0;
+      let buzzBoost = 0;
+      let fanBoost = 0;
+      let videoViewBoost = 0;
+
+      for (const campaign of campaigns) {
+        const base = campaign.spend / 1200;
+        switch (campaign.type) {
+          case "social":
+            campaignPower += base * 0.6;
+            buzzBoost += Math.round(campaign.spend / 3500);
+            break;
+          case "radio":
+            campaignPower += base * 0.5;
+            radioBoost += Math.round(campaign.spend / 45);
+            break;
+          case "press":
+            campaignPower += base * 0.4;
+            this.state.reputation = clamp(this.state.reputation + Math.round(campaign.spend / 18000));
+            break;
+          case "playlist":
+            campaignPower += base * 0.7;
+            streamsBoost += Math.round(campaign.spend / 2.2);
+            break;
+          case "fanclub":
+            campaignPower += base * 0.3;
+            fanBoost += Math.round(campaign.spend / 6);
+            break;
+          case "video":
+            campaignPower += base * 0.8;
+            videoViewBoost += Math.round(campaign.spend / 2.5);
+            break;
+          case "international":
+            campaignPower += base * 0.9;
+            fanBoost += Math.round(campaign.spend / 8);
+            artist.appeal = clamp(artist.appeal + 1);
+            break;
+        }
+      }
+
       let scoreMultiplier = 1;
       if (song.videoQuality === "cinematic") scoreMultiplier = 1.25;
       else if (song.videoQuality === "cgi") scoreMultiplier = 1.5;
@@ -542,26 +645,26 @@ export class SimulationEngine {
       for (const [rivalLabel, specialtyGenre] of Object.entries(this.state.rivalSpecialties || {})) {
         if (artist.genre === specialtyGenre && this.rng.next() < 0.28) {
           aiAggressionBonus -= 15;
-          this.addNews(`Genre War: ${rivalLabel} mounts a competitive single release in ${specialtyGenre} to counter “${song.title}”. Chart difficulty increased.`, "danger");
+          this.addNews(`Genre War: ${rivalLabel} mounts a competitive single release in ${specialtyGenre} to counter "${song.title}". Chart difficulty increased.`, "danger");
         }
       }
 
       const score = Math.max(10, Math.round(((song.quality * 1.4 + artist.appeal + artist.buzz + campaignPower + this.rng.int(-24, 30)) * decay + aiAggressionBonus) * scoreMultiplier));
       
       const streamsMultiplier = this.state.fanClubFunding === "party" ? 1.12 : 1.0;
-      const streams = Math.round(Math.max(800, score * score * 34) * streamsMultiplier);
-      const radio = Math.max(0, Math.round(score * 1.6 + campaigns.filter((campaign) => campaign.type === "radio").length * 180));
+      const streams = Math.round(Math.max(800, score * score * 34 + streamsBoost) * streamsMultiplier);
+      const radio = Math.max(0, Math.round(score * 1.6 + campaigns.filter((campaign) => campaign.type === "radio").length * 180 + radioBoost));
       
       song.streams += streams;
       song.radioSpins += radio;
       revenue += Math.round(streams * 0.0035 + radio * 2.1);
-      const newFans = Math.round(streams / 135);
+      const newFans = Math.round(streams / 135) + fanBoost;
       fanGrowth += newFans;
-      artist.buzz = clamp(artist.buzz + Math.round(score / 45) - 2);
+      artist.buzz = clamp(artist.buzz + Math.round(score / 45) - 2 + buzzBoost);
       
       if (song.videoQuality) {
         const viewPower = song.videoQuality === "cgi" ? 1.5 : song.videoQuality === "cinematic" ? 1.25 : song.videoQuality === "visualizer" ? 0.9 : 0.5;
-        song.videoViews = (song.videoViews || 0) + Math.round(streams * viewPower + this.rng.int(100, 2000));
+        song.videoViews = (song.videoViews || 0) + Math.round(streams * viewPower + this.rng.int(100, 2000) + videoViewBoost);
       }
 
       this.state.hallOfFame ||= [];
@@ -615,14 +718,106 @@ export class SimulationEngine {
     this.state.totalExpenses += expenses;
     this.state.fanbase += fanGrowth;
     this.state.reputation = clamp(this.state.reputation + Math.round(fanGrowth / 3500));
+
+    const signedForStrategy = this.state.artists.filter((a) => a.signed);
+    const strat = this.state.strategy;
+    if (strat === "indie") {
+      for (const a of signedForStrategy) a.weeklyCost = Math.max(800, a.weeklyCost - Math.round(a.weeklyCost * 0.005));
+      this.state.credibility = clamp((this.state.credibility || 0) + 1);
+    } else if (strat === "idol") {
+      for (const a of signedForStrategy) { a.morale = clamp(a.morale + 2); a.fatigue = clamp(a.fatigue + 2); }
+    } else if (strat === "viral" && this.rng.next() < 0.15 && signedForStrategy.length > 0) {
+      const lucky = this.rng.pick(signedForStrategy);
+      lucky.buzz = clamp(lucky.buzz + 15);
+      this.addNews(`Viral Moment: ${lucky.name} trends on social media after a spontaneous clip goes viral.`, "good");
+    } else if (strat === "radio" && this.state.week % 4 === 0) {
+      this.state.reputation = clamp(this.state.reputation + 1);
+    } else if (strat === "electronic" && this.state.week % 8 === 0) {
+      this.state.credibility = clamp((this.state.credibility || 0) + 2);
+    } else if (strat === "hiphop") {
+      for (const a of signedForStrategy) a.buzz = clamp(a.buzz + 1);
+    } else if (strat === "rock") {
+      for (const tour of this.state.tours) {
+        const tourArtist = this.state.artists.find((a) => a.id === tour.artistId);
+        if (tourArtist && (tourArtist.genre.toLowerCase().includes("rock") || tourArtist.genre.toLowerCase().includes("folk"))) {
+          tour.revenue += Math.round(tour.capacity * tour.ticketPrice * 0.08);
+        }
+      }
+    } else if (strat === "fusion") {
+      for (const a of signedForStrategy) {
+        if (a.market !== this.state.market) a.appeal = clamp(a.appeal + 1);
+      }
+    } else if (strat === "boutique") {
+      for (const a of signedForStrategy) a.loyalty = clamp((a.loyalty || 60) + 1);
+    } else if (strat === "hitfactory") {
+      for (const a of signedForStrategy) a.morale = clamp(a.morale - 1);
+    } else if (strat === "soul") {
+      fanGrowth += Math.round(fanGrowth * 0.05);
+      this.state.fanbase += Math.round(fanGrowth * 0.05);
+    } else if (strat === "novelty" && this.rng.next() < 0.10 && signedForStrategy.length > 0) {
+      const noveltyArtist = this.rng.pick(signedForStrategy);
+      noveltyArtist.buzz = clamp(noveltyArtist.buzz + 30);
+      noveltyArtist.morale = clamp(noveltyArtist.morale - 2);
+      this.addNews(`Novelty Spike: ${noveltyArtist.name} becomes an unexpected meme sensation.`, "good");
+    }
+
     this.state.week += 1;
     this.state.chart = this.buildChart(scores);
     const peakChart = this.state.chart.find((entry) => entry.playerOwned)?.position ?? null;
+    if (peakChart !== null) {
+      const playerEntry = this.state.chart.find((entry) => entry.playerOwned)!;
+      this.state.chartHistory ||= [];
+      this.state.chartHistory.push({ week: this.state.week, position: peakChart, title: playerEntry.title });
+      if (this.state.chartHistory.length > 100) this.state.chartHistory = this.state.chartHistory.slice(-100);
+    }
     const headline = this.weeklyHeadline(peakChart);
     this.addNews(headline, peakChart && peakChart <= 10 ? "good" : "neutral");
     this.unlockAchievements(peakChart);
     this.updateTrends();
     this.generateSocialPost(peakChart);
+
+    this.state.activeEventChains ||= [];
+    const dueChains = this.state.activeEventChains.filter((chain) => chain.triggerWeek <= this.state.week);
+    this.state.activeEventChains = this.state.activeEventChains.filter((chain) => chain.triggerWeek > this.state.week);
+    for (const chain of dueChains) {
+      if (this.state.pendingEvent) break;
+      if (chain.id.startsWith("chain-leak-")) {
+        const artist = this.state.artists.find((a) => a.id === chain.payload);
+        if (artist && artist.signed) {
+          this.state.pendingEvent = {
+            id: `chain-event-${chain.id}`,
+            title: `Song Leak Fallout: ${artist.name}`,
+            description: `After refusing the raise, ${artist.name} leaked an unreleased track to a rival label. The industry is buzzing.`,
+            category: "crisis",
+            choices: [
+              { id: `chain-leak-sue-${artist.id}`, label: "Pursue legal action (€18K)", cash: -18000, reputation: 5, morale: -10, buzz: -10 },
+              { id: `chain-leak-spin-${artist.id}`, label: "Spin it as a viral marketing moment", cash: 0, reputation: -2, morale: 5, buzz: 15 }
+            ]
+          };
+        }
+      } else if (chain.id.startsWith("chain-refreshed-")) {
+        const artist = this.state.artists.find((a) => a.id === chain.payload);
+        if (artist && artist.signed) {
+          artist.morale = clamp(artist.morale + 25);
+          artist.fatigue = clamp(artist.fatigue - 20);
+          artist.buzz = clamp(artist.buzz + 8);
+          this.addNews(`Wellness Return: ${artist.name} is back from retreat — re-energized and creatively fired.`, "good");
+        }
+      } else if (chain.id.startsWith("chain-walkout-")) {
+        const artist = this.state.artists.find((a) => a.id === chain.payload);
+        if (artist && artist.signed && artist.morale < 25) {
+          artist.signed = false;
+          artist.contractWeeks = 0;
+          this.addNews(`Walkout: ${artist.name} has quit the label after being forced to work through burnout.`, "danger");
+          this.state.reputation = clamp(this.state.reputation - 3);
+        }
+      } else if (chain.id.startsWith("chain-investment-")) {
+        const bonus = this.rng.int(8000, 22000);
+        this.state.cash += bonus;
+        this.addNews(`Investment Payoff: A bold earlier decision pays off with a €${bonus.toLocaleString()} windfall.`, "good");
+      }
+    }
+
     if (!this.state.pendingEvent) {
       const signedArtists = this.state.artists.filter((a) => a.signed);
       for (const artist of signedArtists) {
@@ -688,6 +883,54 @@ export class SimulationEngine {
           };
           break;
         }
+      }
+      if (!this.state.pendingEvent && this.state.reputation >= 40 && this.rng.next() < 0.08) {
+        if (this.state.reputation >= 80) {
+          this.state.pendingEvent = {
+            id: `event-brand-partnership-${this.state.week}`,
+            title: "Global Brand Partnership Offer",
+            description: `A major lifestyle brand wants to partner with ${this.state.labelName}. The deal includes a €50K endorsement fee and cross-promotional reach.`,
+            category: "opportunity",
+            choices: [
+              { id: "choice-brand-accept", label: "Accept brand deal (€50K + reputation)", cash: 50000, reputation: 8, morale: 5, buzz: 12 },
+              { id: "choice-brand-decline", label: "Decline — stay independent", cash: 0, reputation: 3, morale: 8, buzz: 0 }
+            ]
+          };
+        } else if (this.state.reputation >= 60) {
+          this.state.pendingEvent = {
+            id: `event-festival-headline-${this.state.week}`,
+            title: "Festival Headliner Invitation",
+            description: `The prestigious Neon Horizon Festival wants one of your artists as a headliner. Massive exposure and revenue potential.`,
+            category: "opportunity",
+            choices: [
+              { id: "choice-festival-accept", label: "Accept headliner slot (€30K production)", cash: -30000, reputation: 12, morale: 15, buzz: 25 },
+              { id: "choice-festival-decline", label: "Decline — not ready yet", cash: 0, reputation: -2, morale: -5, buzz: 0 }
+            ]
+          };
+        } else {
+          this.state.pendingEvent = {
+            id: `event-tv-appearance-${this.state.week}`,
+            title: "TV Show Appearance Offer",
+            description: `A popular music TV show wants to feature one of your artists. Great exposure for the label's reputation.`,
+            category: "opportunity",
+            choices: [
+              { id: "choice-tv-accept", label: "Book TV appearance (€15K production)", cash: -15000, reputation: 8, morale: 10, buzz: 15 },
+              { id: "choice-tv-decline", label: "Pass on the opportunity", cash: 0, reputation: 0, morale: 0, buzz: 0 }
+            ]
+          };
+        }
+      }
+      if (!this.state.pendingEvent && this.state.reputation >= 30 && this.rng.next() < 0.06) {
+        this.state.pendingEvent = {
+          id: `event-magazine-cover-${this.state.week}`,
+          title: "Magazine Cover Feature",
+          description: `${this.rng.pick(publications)} wants to feature ${this.state.labelName} on their cover story. A major credibility boost.`,
+          category: "opportunity",
+          choices: [
+            { id: "choice-magazine-accept", label: "Accept cover feature (€8K photoshoot)", cash: -8000, reputation: 6, morale: 8, buzz: 10 },
+            { id: "choice-magazine-decline", label: "Decline — too much attention", cash: 0, reputation: -1, morale: 0, buzz: 0 }
+          ]
+        };
       }
       if (!this.state.pendingEvent && this.rng.next() < this.eventChance()) {
         this.state.pendingEvent = this.createEvent();
@@ -791,6 +1034,17 @@ export class SimulationEngine {
     unlock("Tour Warrior", this.state.toursCompleted >= 5);
     unlock("Festival Headliner", this.state.fanbase >= 250_000);
     unlock("International Empire", this.state.fanbase >= 1_000_000);
+    unlock("Playlist Whisperer", this.state.campaigns.filter((c) => c.type === "playlist").length >= 10);
+    unlock("Indie Credibility", this.state.credibility >= 85);
+    unlock("Idol Machine", this.state.artists.filter((a) => a.signed).length >= 5);
+    unlock("Crisis Manager", (this.state.crisesResolved || 0) >= 10);
+    unlock("Catalog King", this.state.songs.filter((s) => s.status === "released").length >= 20);
+    unlock("Fan Club Legend", this.state.fanbase >= 500_000);
+    unlock("Award Season Shark", this.state.awardsWon >= 3);
+    unlock("Comeback Architect", peak !== null && peak <= 20 && this.state.chartHistory.some((h) => h.position > 50));
+    unlock("Zero Budget Miracle", peak !== null && peak <= 10 && this.state.cash < 50_000);
+    unlock("Marketing Mastermind", (this.state.totalCampaigns || 0) >= 20);
+    unlock("Press Darling", this.state.campaigns.filter((c) => c.type === "press").length >= 10);
   }
 
   private hydrate(state: GameState): GameState {
@@ -827,6 +1081,11 @@ export class SimulationEngine {
         "Moonshot Melody Group": "Alt-Rock",
         "Northstar Audio": "Cloud Rap"
       },
+      scoutOffset: state.scoutOffset || 0,
+      chartHistory: state.chartHistory || [],
+      activeEventChains: state.activeEventChains || [],
+      crisesResolved: state.crisesResolved || 0,
+      totalCampaigns: state.totalCampaigns || 0,
       artists: state.artists.map((artist) => ({ ...artist, contractWeeks: artist.contractWeeks || (artist.signed ? 104 : 0), royaltyRate: artist.royaltyRate || 20, spotifyId: artist.spotifyId || null })),
       songs: state.songs.map((song) => ({
         ...song,

@@ -11,7 +11,6 @@ const routes = [
   "leaderboards",
   "challenges",
   "privacy",
-  "cookies",
   "terms",
   "contact",
   "admin"

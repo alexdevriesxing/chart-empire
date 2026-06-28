@@ -1,4 +1,4 @@
-import { adSlot, escapeHtml, header, sidebarSkyscraperAd, triggerAdsterraLoads } from "./components";
+import { adSlot, contentBannerAd, escapeHtml, header, mediumRectangleAd, mobileHeaderAd, nativeAdContainer, sidebarSkyscraperAd, triggerAdsterraLoads } from "./components";
 import { challengeScenarios, markets, strategies } from "../game/data/content";
 import { SimulationEngine } from "../game/systems/SimulationEngine";
 import { SaveSystem } from "../game/systems/SaveSystem";
@@ -23,7 +23,7 @@ let cloudSyncPromise: Promise<void> | null = null;
 let accountsEnabled = false;
 
 export function playPage(): string {
-  return `${header()}<main id="main-content" class="play-page"><div id="phaser-stage" aria-hidden="true"></div><section id="game-ui" class="game-ui" aria-live="polite"><div class="game-loader"><span></span><p>Opening the label office…</p></div></section></main>`;
+  return `${header()}${mobileHeaderAd()}<main id="main-content" class="play-page"><div id="phaser-stage" aria-hidden="true"></div><section id="game-ui" class="game-ui" aria-live="polite"><div class="game-loader"><span></span><p>Opening the label office…</p></div></section></main>`;
 }
 
 export async function setupPlayPage(): Promise<void> {
@@ -143,120 +143,6 @@ function renderGame(): void {
   }
   const signed = state.artists.filter((artist) => artist.signed);
   gameRoot().innerHTML = `
-    <style>
-      @keyframes diamond-glow {
-        0% { box-shadow: 0 0 3px rgba(230, 230, 250, 0.4); filter: brightness(0.95); }
-        100% { box-shadow: 0 0 10px rgba(230, 230, 250, 0.8); filter: brightness(1.15); }
-      }
-      @keyframes gold-glow {
-        0% { box-shadow: 0 0 3px rgba(255, 215, 0, 0.3); }
-        100% { box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
-      }
-      .badge-diamond {
-        background: linear-gradient(135deg, #ffffff, #b0c4de, #e6e6fa) !important;
-        color: #0d0f26 !important;
-        border: 1px solid #ffffff !important;
-        font-weight: 800 !important;
-        padding: 2px 6px !important;
-        border-radius: 4px !important;
-        font-size: 0.65rem !important;
-        box-shadow: 0 0 8px rgba(230, 230, 250, 0.5);
-        animation: diamond-glow 2s infinite alternate;
-        display: inline-block;
-        vertical-align: middle;
-        margin-left: 6px;
-      }
-      .badge-platinum {
-        background: linear-gradient(135deg, #e5e4e2, #b0c4de) !important;
-        color: #0d0f26 !important;
-        border: 1px solid #b0c4de !important;
-        font-weight: 800 !important;
-        padding: 2px 6px !important;
-        border-radius: 4px !important;
-        font-size: 0.65rem !important;
-        box-shadow: 0 0 6px rgba(229, 228, 226, 0.4);
-        display: inline-block;
-        vertical-align: middle;
-        margin-left: 6px;
-      }
-      .badge-gold {
-        background: linear-gradient(135deg, #ffd700, #ffa500) !important;
-        color: #0d0f26 !important;
-        border: 1px solid #ffd700 !important;
-        font-weight: 800 !important;
-        padding: 2px 6px !important;
-        border-radius: 4px !important;
-        font-size: 0.65rem !important;
-        box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
-        animation: gold-glow 2s infinite alternate;
-        display: inline-block;
-        vertical-align: middle;
-        margin-left: 6px;
-      }
-      .event-decision {
-        background: linear-gradient(145deg, #0e122b, #12183a);
-        border: 1px solid var(--color-border);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        animation: slide-in 0.4s ease-out;
-      }
-      @keyframes slide-in {
-        from { transform: translateY(15px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-      .event-decision.crisis {
-        border-color: var(--color-danger);
-        box-shadow: 0 0 15px rgba(220, 53, 69, 0.25);
-      }
-      .event-decision.opportunity {
-        border-color: var(--color-emerald);
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
-      }
-      .event-decision h2 {
-        font-size: 1.35rem;
-        font-weight: 700;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-      }
-      .event-decision span {
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        padding: 3px 8px;
-        border-radius: 6px;
-        display: inline-block;
-      }
-      .event-decision.crisis span {
-        background: rgba(220, 53, 69, 0.15);
-        color: var(--color-danger);
-        border: 1px solid rgba(220, 53, 69, 0.3);
-      }
-      .event-decision.opportunity span {
-        background: rgba(16, 185, 129, 0.15);
-        color: var(--color-emerald);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-      }
-      .event-decision button {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--color-border);
-        border-radius: 10px;
-        padding: 0.8rem 1.2rem;
-        margin-top: 0.6rem;
-        cursor: pointer;
-        text-align: left;
-        transition: all 0.2s ease;
-        width: 100%;
-      }
-      .event-decision button:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: var(--color-text);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      }
-    </style>
     <div class="game-shell">
       <aside class="game-sidebar">
         <div class="game-label">${logoMarkup(state.logo, state.labelName)}<div><strong>${escapeHtml(state.labelName)}</strong><small>${strategies[state.strategy].name}</small></div></div>
@@ -265,6 +151,7 @@ function renderGame(): void {
       </aside>
       <section class="game-main" style="display: flex; flex-direction: column;">
         <header class="game-topbar"><button class="mobile-game-menu" data-game-action="toggle-menu" aria-label="Toggle game menu">☰</button><div class="week-chip"><span>WEEK</span><b>${state.week}</b></div><div class="resource"><small>Cash</small><b class="${state.cash < 0 ? "danger" : ""}">${formatMoney(state.cash)}</b></div><div class="resource"><small>Fans</small><b>${formatNumber(state.fanbase)}</b></div><div class="resource"><small>Reputation</small><b>${state.reputation}</b></div><label class="quality-control"><span>Quality</span><select data-quality><option value="high" ${quality() === "high" ? "selected" : ""}>High</option><option value="balanced" ${quality() === "balanced" ? "selected" : ""}>Balanced</option><option value="battery" ${quality() === "battery" ? "selected" : ""}>Battery</option></select></label><button class="audio-toggle" data-game-action="mute" aria-label="${audioService.muted ? "Unmute game audio" : "Mute game audio"}">${audioService.muted ? "♪̸" : "♪"}</button><button class="button button-primary advance-button" data-game-action="end-week">Advance week →</button></header>
+        <div class="mobile-resource-strip"><span class="${state.cash < 0 ? "danger" : ""}">€${formatNumber(state.cash)}</span><span>${formatNumber(state.fanbase)} fans</span><span>Rep ${state.reputation}</span></div>
         <div class="game-layout-container" style="display: flex; flex: 1; min-height: 0;">
           <div class="game-content" style="flex: 1; min-width: 0; overflow-y: auto; padding: 20px;">${renderView(currentView, signed)}</div>
           <aside class="desktop-only-ad-sidebar" style="width: 200px; flex-shrink: 0; height: 100%; border-left: 1px solid var(--color-border); background: var(--color-background-offset);">
@@ -306,8 +193,10 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
       <div class="dashboard-grid"><section class="game-panel"><div class="panel-title"><div><span>SOCIAL SIGNAL</span><h2>Fictional fan feed</h2></div></div><div class="social-feed">${state.socialFeed.length ? state.socialFeed.slice(0, 5).map((post) => `<article class="${post.sentiment}"><div><b>${escapeHtml(post.author)}</b><span>${escapeHtml(post.platform)} · W${post.week}</span></div><p>${escapeHtml(post.text)}</p></article>`).join("") : "<p class='muted'>Release music to start the conversation.</p>"}</div></section>
       <section class="game-panel"><div class="panel-title"><div><span>MARKET WEATHER</span><h2>Active trends</h2></div></div><div class="trend-list">${state.trends.length ? state.trends.map((trend) => `<article><span>${escapeHtml(trend.genre)}</span><b>${escapeHtml(trend.name)}</b><small>+${trend.strength} signal · ${trend.weeksRemaining} weeks</small></article>`).join("") : "<p class='muted'>The market is between major waves.</p>"}</div></section></div>
       ${adSlot("Game dashboard sponsor", "game")}
+      ${mediumRectangleAd()}
       <section class="game-panel"><div class="panel-title"><div><span>ROSTER PULSE</span><h2>Signed artists</h2></div><button data-view="roster">View roster →</button></div>${signed.length ? `<div class="artist-row">${signed.slice(0, 4).map(artistCard).join("")}</div>` : `<div class="mini-empty"><p>No artists signed. Your scouts have 75 fictional prospects ready.</p><button class="button button-secondary" data-view="scout">Open scouting</button></div>`}</section>
-      <section class="game-panel achievement-panel"><div class="panel-title"><div><span>LEGACY</span><h2>Achievements</h2></div><span>${state.achievements.length}/20 · ${state.awardsWon} awards</span></div>${state.achievements.length ? `<div class="achievement-list">${state.achievements.map((achievement) => `<span>✦ ${escapeHtml(achievement)}</span>`).join("")}</div>` : "<p class='muted'>Your first milestone is still ahead.</p>"}</section>`;
+      <section class="game-panel achievement-panel"><div class="panel-title"><div><span>LEGACY</span><h2>Achievements</h2></div><span>${state.achievements.length}/20 · ${state.awardsWon} awards</span></div>${state.achievements.length ? `<div class="achievement-list">${state.achievements.map((achievement) => `<span>✦ ${escapeHtml(achievement)}</span>`).join("")}</div>` : "<p class='muted'>Your first milestone is still ahead.</p>"}</section>
+      ${nativeAdContainer()}`;
   }
   if (view === "scout") {
     const upgrades = state.upgrades || [];
@@ -350,7 +239,9 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
       </div>
     </section>
 
-    <div class="card-grid">${engine.scoutCandidates().map((artist) => `<article class="talent-card"><div class="talent-avatar" style="background-image: url('${getArtistLogo(artist.name, artist.genre)}')"><b>${initials(artist.name)}</b></div><div><span>${artist.genre} · ${artist.market}</span><h2>${escapeHtml(artist.name)}</h2></div><div class="talent-stats"><label>Talent <b>${artist.talent}</b><i><em style="width:${artist.talent}%"></em></i></label><label>Appeal <b>${artist.appeal}</b><i><em style="width:${artist.appeal}%"></em></i></label><label>Buzz <b>${artist.buzz}</b><i><em style="width:${artist.buzz}%"></em></i></label></div><footer><span><small>WEEKLY COST</small><b>${formatMoney(artist.weeklyCost)}</b></span><button class="button button-primary" data-game-action="sign" data-id="${artist.id}">Sign · ${formatMoney(artist.weeklyCost * 4)}</button></footer></article>`).join("")}</div>`;
+    <div class="card-grid">${engine.scoutCandidates().map((artist) => `<article class="talent-card"><div class="talent-avatar" style="background-image: url('${getArtistLogo(artist.name, artist.genre)}')"><b>${initials(artist.name)}</b></div><div><span>${artist.genre} · ${artist.market}</span><h2>${escapeHtml(artist.name)}</h2></div><div class="talent-stats"><label>Talent <b>${artist.talent}</b><i><em style="width:${artist.talent}%"></em></i></label><label>Appeal <b>${artist.appeal}</b><i><em style="width:${artist.appeal}%"></em></i></label><label>Buzz <b>${artist.buzz}</b><i><em style="width:${artist.buzz}%"></em></i></label></div><footer><span><small>WEEKLY COST</small><b>${formatMoney(artist.weeklyCost)}</b></span><button class="button button-primary" data-game-action="sign" data-id="${artist.id}">Sign · ${formatMoney(artist.weeklyCost * 4)}</button></footer></article>`).join("")}</div>
+    <div style="display: flex; justify-content: center; margin-top: 1rem;"><button class="button button-secondary" data-game-action="refresh-scout">↻ Pass — Show next candidates · ${formatMoney(2000 + (state.scoutOffset || 0) * 500)}</button></div>
+    ${contentBannerAd()}`;
   }
   if (view === "roster") {
     return `<div class="view-heading"><div><span class="eyebrow">Artist development</span><h1>Your roster.</h1><p>Morale and fatigue influence sessions, campaigns, and long-term performance.</p></div></div>${signed.length ? `<div class="card-grid">${signed.map((artist) => `<article class="talent-card signed"><div class="talent-avatar" style="background-image: url('${getArtistLogo(artist.name, artist.genre)}')"><b>${initials(artist.name)}</b></div><div><span>${artist.genre} · ${artist.market}</span><h2>${escapeHtml(artist.name)}</h2></div><div class="talent-stats"><label>Morale <b>${artist.morale}</b><i><em style="width:${artist.morale}%"></em></i></label><label>Fatigue <b>${artist.fatigue}</b><i class="fatigue"><em style="width:${artist.fatigue}%"></em></i></label><label>Buzz <b>${artist.buzz}</b><i><em style="width:${artist.buzz}%"></em></i></label></div>
@@ -396,10 +287,20 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
     return `<div class="view-heading"><div><span class="eyebrow">Company builder</span><h1>Your team changes the odds.</h1><p>Staff add weekly overhead but improve scouting, marketing, radio, touring, and financial execution.</p></div></div><section class="game-panel"><div class="panel-title"><div><span>EMPLOYEES</span><h2>Current team</h2></div><span>${state.staff.length} hired</span></div>${state.staff.length ? `<div class="staff-list">${state.staff.map((member) => `<article><div class="talent-avatar small">${initials(member.name)}</div><div><b>${escapeHtml(member.name)}</b><small>${member.role} · Skill ${member.skill}</small></div><em>${formatMoney(member.weeklyCost)}/week</em></article>`).join("")}</div>` : "<p class='muted'>The founder is still doing every job.</p>"}</section><div class="card-grid staff-candidates">${candidates.map((member) => `<article class="talent-card"><div class="talent-avatar">${initials(member.name)}</div><div><span>${member.role}</span><h2>${escapeHtml(member.name)}</h2></div><div class="talent-stats"><label>Skill <b>${member.skill}</b><i><em style="width:${member.skill}%"></em></i></label></div><footer><span><small>WEEKLY COST</small><b>${formatMoney(member.weeklyCost)}</b></span><button class="button button-primary" data-game-action="hire-staff" data-id="${member.id}">Hire · ${formatMoney(member.weeklyCost * 2)}</button></footer></article>`).join("")}</div>`;
   }
   if (view === "charts") {
+    const history = state.chartHistory || [];
     return `<div class="view-heading"><div><span class="eyebrow">Global Pulse Top 20</span><h1>The world chart.</h1><p>A fictional weekly chart combining quality, audience fit, buzz, campaigns, decay, and volatility.</p></div></div>${state.chart.length ? `<section class="game-panel chart-table"><div class="chart-head"><span>#</span><span>Release</span><span>Label</span><span>Score</span></div>${state.chart.map((entry) => {
       const specialty = state.rivalSpecialties?.[entry.label];
       const specialtyTag = specialty ? `<small style="font-size: 0.6rem; color: var(--color-purple); display: block; margin-top: 2px;">★ ${specialty} Leader</small>` : "";
-      return `<article class="${entry.playerOwned ? "player-entry" : ""}"><b>${entry.position}</b><div><strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.artist)}</small></div><span><img src="${getLabelLogo(entry.label)}" style="width: 16px; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 6px; border: 1px solid rgba(255,255,255,0.08);">${escapeHtml(entry.label)}${specialtyTag}</span><em>${entry.score}</em></article>`;
+      let movementTag = "";
+      if (entry.playerOwned) {
+        const prev = history.filter((h) => h.title === entry.title && h.week < state.week);
+        const lastPos = prev.length > 0 ? prev[prev.length - 1]!.position : null;
+        if (lastPos === null) movementTag = `<span class="chart-movement chart-new">NEW</span>`;
+        else if (entry.position < lastPos) movementTag = `<span class="chart-movement chart-up">▲${lastPos - entry.position}</span>`;
+        else if (entry.position > lastPos) movementTag = `<span class="chart-movement chart-down">▼${entry.position - lastPos}</span>`;
+        else movementTag = `<span class="chart-movement chart-steady">—</span>`;
+      }
+      return `<article class="${entry.playerOwned ? "player-entry" : ""}"><b>${entry.position}</b><div><strong>${escapeHtml(entry.title)}</strong>${movementTag}<small>${escapeHtml(entry.artist)}</small></div><span><img src="${getLabelLogo(entry.label)}" style="width: 16px; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 6px; border: 1px solid rgba(255,255,255,0.08);">${escapeHtml(entry.label)}${specialtyTag}</span><em>${entry.score}</em></article>`;
     }).join("")}</section>` : emptyAction("The chart updates after a release week.", "Release music and advance the week to see how it competes.", "Go to studio", "studio")}`;
   }
   const fanClubFundingLevel = state.fanClubFunding || "none";
@@ -480,7 +381,7 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
                       song.certification === "gold" ? `<span class="badge-gold">★ GOLD</span>` : "";
     const videoTag = song.videoQuality ? `<span style="font-size: 0.72rem; color: var(--color-muted); display: block; margin-top: 2px;">🎥 ${song.videoQuality.toUpperCase()} Video · ${formatNumber(song.videoViews || 0)} views</span>` : "";
     return `<article><div class="release-art-thumbnail" style="background-image: url('${coverImg}')"></div><div><span>${song.status}</span><b>${escapeHtml(song.title)}</b>${certBadge}<small>${escapeHtml(artist?.name || "")} · Quality ${song.quality} · ${formatNumber(song.streams)} streams · Peak ${song.peakPosition ? `#${song.peakPosition}` : "—"}</small>${videoTag}</div><em>${formatMoney(song.streams * 0.0035 + song.radioSpins * 2.1)}</em></article>`;
-  }).join("")}</div>` : `<div class="mini-empty"><p>Your catalog has no recorded assets.</p></div>`}</section>`;
+  }).join("")}</div>` : `<div class="mini-empty"><p>Your catalog has no recorded assets.</p></div>`}</section>${contentBannerAd()}`;
 }
 
 function bindGameEvents(): void {
@@ -679,6 +580,13 @@ function bindGameEvents(): void {
         showToast("A&R Network upgrade unlocked!");
         return;
       }
+      if (action === "refresh-scout") {
+        engine.refreshScout();
+        await persistState(true);
+        renderGame();
+        showToast("Scout pool refreshed — new candidates available.");
+        return;
+      }
       if (action === "press-vinyl" && target.dataset.id) {
         engine.orderVinyl(target.dataset.id, 5000);
         await persistState(true);
@@ -838,6 +746,31 @@ function bindGameEvents(): void {
       showToast("Save imported.");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Import failed.", true);
+    }
+  });
+
+  const viewKeys: Record<string, GameView> = { "1": "dashboard", "2": "scout", "3": "roster", "4": "studio", "5": "marketing", "6": "touring", "7": "staff", "8": "charts", "9": "finance" };
+  document.addEventListener("keydown", async (event: KeyboardEvent) => {
+    if (!engine) return;
+    if ((event.target as HTMLElement).matches("input, textarea, select")) return;
+    if (viewKeys[event.key]) {
+      currentView = viewKeys[event.key]!;
+      renderGame();
+      return;
+    }
+    if (event.key === " " && !event.repeat) {
+      event.preventDefault();
+      if (engine.state.pendingEvent) return;
+      try {
+        const report = engine.endWeek();
+        analyticsService.track("week_resolved", { week: engine.state.week, peakChart: report.peakChart || 0, challenge: engine.state.challengeId || "career" });
+        window.dispatchEvent(new CustomEvent<WeekReport>("chart-empire-week", { detail: report }));
+        await persistState();
+        renderGame();
+        showReport(report);
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Week advance failed.", true);
+      }
     }
   });
 }

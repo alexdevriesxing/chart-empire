@@ -169,8 +169,13 @@ export interface GameState {
   activeBuyout: BuyoutOffer | null;
   awards: string[];
   fanClubFunding: "none" | "street" | "app" | "party";
-  hallOfFame: string[];
-  rivalSpecialties: Record<string, string>;
+   hallOfFame: string[];
+   rivalSpecialties: Record<string, string>;
+   scoutOffset: number;
+   chartHistory: Array<{ week: number; position: number; title: string }>;
+   activeEventChains: Array<{ id: string; triggerWeek: number; payload: string }>;
+   crisesResolved: number;
+   totalCampaigns: number;
 }
 
 export interface VinylInventory {

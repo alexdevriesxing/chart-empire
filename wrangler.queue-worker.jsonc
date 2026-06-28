@@ -1,0 +1,20 @@
+{
+  "name": "chart-empire-queue-worker",
+  "main": "worker/queueConsumers.ts",
+  "compatibility_date": "2026-06-01",
+  "kv_namespaces": [
+    { "binding": "KV_CONFIG", "id": "a8b326472e854ccd8368613c14460192" }
+  ],
+  "r2_buckets": [
+    { "binding": "R2_ASSETS", "bucket_name": "chart-empire-assets" }
+  ],
+  "queues": {
+    "consumers": [
+      {
+        "queue": "chart-empire-save-jobs",
+        "max_batch_size": 10,
+        "max_batch_timeout": 30
+      }
+    ]
+  }
+}

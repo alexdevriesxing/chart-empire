@@ -1,8 +1,7 @@
 import { challengeScenarios } from "../game/data/content";
 import { siteConfig } from "../config/siteConfig";
-import { consentService, type ConsentCategory } from "../services/ConsentService";
 import { mountTurnstile } from "../services/TurnstileService";
-import { adSlot, escapeHtml, shell, songOfWeek } from "./components";
+import { adSlot, contentBannerAd, escapeHtml, mediumRectangleAd, nativeAdContainer, shell, songOfWeek } from "./components";
 
 const features = [
   ["✦", "Sign Artists", "Scout a world of generated fictional talent and negotiate your first roster."],
@@ -30,7 +29,7 @@ export function homePage(): string {
           <span class="address-bar">chart-empire.com/play</span>
         </div>
         <div class="hero-image-wrap">
-          <img src="/images/chart_empire_hero.png" alt="Chart Empire Game Preview">
+          <img src="/images/chart_empire_hero.png" alt="Chart Empire Game Preview - Music Label Management Simulation">
           <div class="overlay-stats">
             <div class="notification">✦ <span><b>Festival offer received</b><small>Electric Horizon wants your headliner.</small></span></div>
           </div>
@@ -41,14 +40,15 @@ export function homePage(): string {
     <section class="section"><div class="section-heading"><span class="eyebrow">Your label. Your decisions.</span><h2>Every release starts a new story.</h2><p>Build careers in a living fictional industry where creative choices, timing, relationships, and cashflow all matter.</p></div>
       <div class="feature-grid">${features.map(([icon, title, copy]) => `<article class="feature-card"><span class="feature-icon">${icon}</span><h3>${title}</h3><p>${copy}</p></article>`).join("")}</div>
     </section>
-    <section class="section split-section"><div><span class="eyebrow">A living industry</span><h2>Your rivals don’t wait.</h2><p>Sixteen AI labels scout talent, release records, chase trends, and compete for the same fictional charts. Weekly decisions create new headlines and new problems.</p><ul class="signal-list"><li>Deterministic, replayable simulation</li><li>75+ generated artists across 11 markets</li><li>Campaigns, charts, finance, morale, and fatigue</li></ul><a class="text-link" href="/guide" data-link>Read the complete game guide →</a></div>
+    <section class="section split-section"><div><span class="eyebrow">A living industry</span><h2>Your rivals don't wait.</h2><p>Sixteen AI labels scout talent, release records, chase trends, and compete for the same fictional charts. Weekly decisions create new headlines and new problems.</p><ul class="signal-list"><li>Deterministic, replayable simulation</li><li>75+ generated artists across 11 markets</li><li>Campaigns, charts, finance, morale, and fatigue</li></ul><a class="text-link" href="/guide" data-link>Read the complete game guide →</a></div>
       <div class="news-stack"><article><span>INDIE PULSE WEEKLY</span><b>Is synth-soul the next global wave?</b></article><article><span>STARWAVE NETWORK</span><b>Midnight Arcade added to late-night rotation.</b></article><article><span>FANWIRE</span><b>#GlassSatellitesTour trends in six markets.</b></article></div>
     </section>
     ${adSlot("Native partner story", "native")}
     <section class="section partner-section"><div class="section-heading"><span class="eyebrow">From the game to the real world</span><h2>Discover music. Learn promotion.</h2></div>
       <div class="partner-grid"><article class="partner-card xing"><span class="partner-kicker">REAL RELEASES</span><h3>Xing Records</h3><p>Discover independent releases and the configurable Song of the Week.</p><a href="/xing-records" data-link>Enter the showcase →</a></article><article class="partner-card promo"><span class="partner-kicker">REAL CAMPAIGNS</span><h3>Indie Music Promotion</h3><p>Promoting an actual artist? Explore professional radio, press, and release support.</p><a href="/music-promotion" data-link>Learn music promotion →</a></article></div>
     </section>
-    <section class="section song-section"><div><span class="eyebrow">Featured this week</span><h2>Song of the Week</h2><p>A consent-aware showcase from Xing Records. External video never loads before you allow it.</p></div>${songOfWeek()}</section>
+    ${contentBannerAd()}
+    <section class="section song-section"><div><span class="eyebrow">Featured this week</span><h2>Song of the Week</h2><p>A weekly spotlight from Xing Records featuring independent music.</p></div>${songOfWeek()}</section>
     <section class="final-cta"><span class="eyebrow">The office is open</span><h2>Your first artist is waiting.</h2><p>Start as a guest. No account, no download, no real-world music rights required.</p><a class="button button-primary button-large" href="/play" data-link>Build your label →</a></section>
   `, "home-page");
 }
@@ -69,8 +69,8 @@ export function contentPage(path: string): string {
     "/guide": { eyebrow: "Game guide", title: "From first signing to global empire.", lead: "A practical guide to the systems that decide whether your label thrives, stalls, or runs out of cash.", body: guideBody() },
     "/how-the-music-industry-works": { eyebrow: "Educational guide", title: "How the music industry works.", lead: "Labels, managers, radio, streaming, press, fan communities, and live shows all shape a career differently.", body: educationalSections.map(([title, copy], index) => `<article class="prose-section"><span>0${index + 1}</span><div><h2>${title}</h2><p>${copy}</p></div></article>`).join("") },
     "/music-promotion": { eyebrow: "Real-world artist support", title: "Promote your music beyond the game.", lead: "Strategy starts with a strong release, clear positioning, realistic goals, and outreach that fits the artist.", body: promotionBody() },
-    "/xing-records": { eyebrow: "Real independent music", title: "Discover Xing Records.", lead: "A real-world music home inside a completely fictional game universe.", body: `<section class="inline-feature"><div><h2>Song of the Week</h2><p>Feature a current Xing Records release through environment configuration. The video embed remains disabled until external-media consent is granted.</p></div>${songOfWeek()}</section><section class="prose-grid"><article><h3>Featured releases</h3><p>Release cards are ready for curated artwork and links when owned media is supplied.</p></article><article><h3>Artist showcase</h3><p>Use this area for real Xing Records artists without mixing them into the fictional simulation.</p></article></section><a class="button button-primary" href="${siteConfig.xingRecordsUrl}" target="_blank" rel="noopener">Visit Xing Records ↗</a>` },
-    "/song-of-the-week": { eyebrow: "Xing Records presents", title: "Song of the Week.", lead: "A consent-aware spotlight for a real independent release.", body: songOfWeek() },
+    "/xing-records": { eyebrow: "Real independent music", title: "Discover Xing Records.", lead: "A real-world music home inside a completely fictional game universe.", body: `<section class="inline-feature"><div><h2>Song of the Week</h2><p>Feature a current Xing Records release through environment configuration.</p></div>${songOfWeek()}</section><section class="prose-grid"><article><h3>Featured releases</h3><p>Release cards are ready for curated artwork and links when owned media is supplied.</p></article><article><h3>Artist showcase</h3><p>Use this area for real Xing Records artists without mixing them into the fictional simulation.</p></article></section><a class="button button-primary" href="${siteConfig.xingRecordsUrl}" target="_blank" rel="noopener">Visit Xing Records ↗</a>` },
+    "/song-of-the-week": { eyebrow: "Xing Records presents", title: "Song of the Week.", lead: "A weekly spotlight for a real independent release.", body: songOfWeek() },
     "/challenges": { eyebrow: "Challenge scenarios", title: "Ten ways to prove your strategy.", lead: "Each scenario changes the constraints, but not the fundamentals: protect cash, develop artists, and build durable demand.", body: `<div class="challenge-grid">${challengeScenarios.map((challenge, index) => `<article><span>${String(index + 1).padStart(2, "0")}</span><h3>${challenge.name}</h3><p>${challenge.description}</p><b>${challenge.target}</b><a class="text-link" href="/play?challenge=${challenge.id}" data-link>Play challenge →</a></article>`).join("")}</div>` },
     "/leaderboards": { eyebrow: "Global Pulse", title: "Public leaderboards.", lead: "Verified scores are calculated from registered cloud careers, not accepted directly from the browser.", body: `<div id="leaderboard-board" class="leaderboard-board"><div class="empty-state"><span>◎</span><h2>Loading the global season…</h2></div></div>` },
     "/privacy": { eyebrow: "Legal", title: "Privacy policy.", lead: "Chart Empire is designed so guest play works without an account.", body: legalBody("privacy") },
@@ -79,20 +79,7 @@ export function contentPage(path: string): string {
     "/admin": { eyebrow: "Restricted", title: "Admin console disabled.", lead: "Enable a real authentication guard and ADMIN_SECRET validation before exposing administrative controls.", body: `<div class="empty-state"><span>◇</span><h2>No public admin access.</h2><p>This route is intentionally a non-functional placeholder.</p></div>` }
   };
   const page = pages[path] || pages["/guide"]!;
-  return shell(`<section class="page-hero"><span class="eyebrow">${page.eyebrow}</span><h1>${page.title}</h1><p>${page.lead}</p></section><section class="content-wrap">${page.body}</section>`, "content-page");
-}
-
-export function cookiePage(): string {
-  const current = consentService.get();
-  const categories: Array<[ConsentCategory, string, string, boolean]> = [
-    ["necessary", "Necessary", "Security, routing, and your privacy choice.", true],
-    ["functionalSaves", "Guest saves", "IndexedDB and LocalStorage career data on this device.", false],
-    ["analytics", "Analytics", "Consent-safe product usage measurement.", false],
-    ["ads", "Advertising", "Optional third-party ad placements.", false],
-    ["personalizedAds", "Personalized ads", "Advertising based on interests or identifiers.", false],
-    ["externalMedia", "External media", "YouTube and other third-party embeds.", false]
-  ];
-  return shell(`<section class="page-hero"><span class="eyebrow">Privacy controls</span><h1>Cookie and consent settings.</h1><p>Optional services stay off unless you enable them. Core gameplay does not require personalized tracking.</p></section><section class="content-wrap"><form id="consent-form" class="settings-card">${categories.map(([key, title, copy, locked]) => `<label><span><strong>${title}</strong><small>${copy}</small></span><input type="checkbox" name="${key}" ${current[key] ? "checked" : ""} ${locked ? "disabled" : ""}></label>`).join("")}<button class="button button-primary" type="submit">Save choices</button></form></section>`, "content-page");
+  return shell(`<section class="page-hero"><span class="eyebrow">${page.eyebrow}</span><h1>${page.title}</h1><p>${page.lead}</p></section><section class="content-wrap">${page.body}</section>${nativeAdContainer()}`, "content-page");
 }
 
 function guideBody(): string {
@@ -100,19 +87,19 @@ function guideBody(): string {
     ["Sign with intent", "Talent sets the ceiling, appeal affects reach, and weekly cost can destroy a young label. Scout before you commit."],
     ["Record when morale is healthy", "Artist talent, morale, and a controlled random factor determine master quality. Fatigue rises in the studio."],
     ["Release before promoting", "Campaigns only work on released songs. Use social, radio, press, playlists, and fan clubs to create different kinds of momentum."],
-    ["Protect runway", "Every signed artist creates weekly expenses. A promising chart result can still be a bad business decision if the campaign overspends."],
+    ["Protect runway", "Every signed artist creates weekly expenses. A promising chart result can still be a bad business decision if the campaign overspend."],
     ["Read the chart", "Song quality, artist appeal, buzz, active campaign investment, release decay, and market volatility produce the weekly score."],
     ["Build a catalog", "Older songs continue earning while their momentum decays. Multiple healthy releases are safer than betting the company on one hit."]
   ];
-  return `<div class="guide-grid">${items.map(([title, copy], index) => `<article><span>${index + 1}</span><h2>${title}</h2><p>${copy}</p></article>`).join("")}</div><section class="callout"><h2>Beginner sequence</h2><p>Create a label → sign one affordable artist → record one song → release it → launch one focused campaign → advance the week → study revenue and chart position before spending again.</p></section>`;
+  return `<div class="guide-grid">${items.map(([title, copy], index) => `<article><span>${index + 1}</span><h2>${title}</h2><p>${copy}</p></article>`).join("")}</div>${contentBannerAd()}<section class="callout"><h2>Beginner sequence</h2><p>Create a label → sign one affordable artist → record one song → release it → launch one focused campaign → advance the week → study revenue and chart position before spending again.</p></section>`;
 }
 
 function promotionBody(): string {
-  return `<div class="prose-grid"><article><h2>Release planning</h2><p>Set a goal, define the audience, prepare assets, create a timeline, and decide what success actually means before outreach begins.</p></article><article><h2>Radio promotion</h2><p>Target relevant formats and territories. Credible reporting matters more than inflated promises.</p></article><article><h2>Press outreach</h2><p>A useful story, clear positioning, strong music, and correct targeting give writers a reason to engage.</p></article><article><h2>Campaign reporting</h2><p>Review placements, reach, responses, and next actions. Promotion should produce learning even when a target says no.</p></article></div><section class="callout accent"><span class="eyebrow">Promoting a real artist?</span><h2>Explore Indie Music Promotion.</h2><p>Professional radio, press, positioning, release strategy, and campaign support outside the game.</p><a class="button button-primary" href="${siteConfig.indieMusicPromotionUrl}" target="_blank" rel="noopener">Visit Indie Music Promotion ↗</a></section>`;
+  return `<div class="prose-grid"><article><h2>Release planning</h2><p>Set a goal, define the audience, prepare assets, create a timeline, and decide what success actually means before outreach begins.</p></article><article><h2>Radio promotion</h2><p>Target relevant formats and territories. Credible reporting matters more than inflated promises.</p></article><article><h2>Press outreach</h2><p>A useful story, clear positioning, strong music, and correct targeting give writers a reason to engage.</p></article><article><h2>Campaign reporting</h2><p>Review placements, reach, responses, and next actions. Promotion should produce learning even when a target says no.</p></article></div>${mediumRectangleAd()}<section class="callout accent"><span class="eyebrow">Promoting a real artist?</span><h2>Explore Indie Music Promotion.</h2><p>Professional radio, press, positioning, release strategy, and campaign support outside the game.</p><a class="button button-primary" href="${siteConfig.indieMusicPromotionUrl}" target="_blank" rel="noopener">Visit Indie Music Promotion ↗</a></section>`;
 }
 
 function legalBody(type: "privacy" | "terms"): string {
-  if (type === "privacy") return `<div class="legal-copy"><h2>Our Privacy Commitment</h2><p>We keep Chart Empire completely free to play thanks to advertisements displayed throughout the site. We do not collect any personal information, and we will never sell or share any data.</p><h2>Local Game Saves</h2><p>Guest career saves are stored entirely on your local device using IndexedDB/LocalStorage. No personal identifier is linked to this local storage.</p></div>`;
+  if (type === "privacy") return `<div class="legal-copy"><h2>Our Privacy Commitment</h2><p>We keep Chart Empire completely free to play thanks to advertisements displayed throughout the site. We do not collect any personal information, and we will never sell or share any data.</p><h2>Local Game Saves</h2><p>Guest career saves are stored entirely on your local device using IndexedDB/LocalStorage. No personal identifier is linked to this local storage.</p><h2>Advertising</h2><p>Third-party advertising partners may use cookies to serve relevant ads. These ads keep the game free for all players.</p></div>`;
   return `<div class="legal-copy"><h2>Fictional simulation</h2><p>Game entities and outcomes are fictional and do not represent real artists, companies, charts, or guarantees about the music industry.</p><h2>User content</h2><p>Upload only logos and artwork you own or have permission to use. Do not upload illegal, hateful, deceptive, or rights-infringing material.</p><h2>Availability</h2><p>The service may change as game balance, infrastructure, and integrations evolve. Guest players are responsible for exporting important local saves.</p><h2>Fair use</h2><p>Do not attack the service, bypass rate limits, manipulate leaderboards, automate abusive traffic, or impersonate another person.</p></div>`;
 }
 
@@ -121,21 +108,6 @@ function contactBody(): string {
 }
 
 export function bindContentPage(path: string): void {
-  if (path === "/cookies") {
-    document.querySelector<HTMLFormElement>("#consent-form")?.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const element = event.currentTarget as HTMLFormElement;
-      const data = new FormData(element);
-      consentService.save({
-        functionalSaves: data.has("functionalSaves"),
-        analytics: data.has("analytics"),
-        ads: data.has("ads"),
-        personalizedAds: data.has("personalizedAds"),
-        externalMedia: data.has("externalMedia")
-      });
-      document.querySelector<HTMLButtonElement>("#consent-form button")!.textContent = "Choices saved";
-    });
-  }
   if (path === "/contact") {
     document.querySelector<HTMLFormElement>("#contact-form")?.addEventListener("submit", async (event) => {
       event.preventDefault();

@@ -26,10 +26,19 @@ describe("Simulation Engine - High Intensity Stress Testing", () => {
 
       if (w % 5 === 0) {
         const artist = signed[w % signed.length]!;
-        const song = engine.recordSong(artist.id);
-        engine.releaseSong(song.id);
-        if (w % 15 === 0) {
-          engine.shootMusicVideo(song.id, "cgi");
+        if (!artist.signed) {
+          const available = engine.scoutCandidates();
+          if (available.length > 0) {
+            engine.signArtist(available[0]!.id);
+            signed.push(engine.state.artists.find(a => a.id === available[0]!.id)!);
+          }
+        }
+        if (artist.signed) {
+          const song = engine.recordSong(artist.id);
+          engine.releaseSong(song.id);
+          if (w % 15 === 0) {
+            engine.shootMusicVideo(song.id, "cgi");
+          }
         }
       }
 

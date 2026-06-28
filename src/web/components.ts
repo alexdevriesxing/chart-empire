@@ -1,5 +1,4 @@
 import { siteConfig } from "../config/siteConfig";
-import { consentService } from "../services/ConsentService";
 
 export function header(): string {
   return `
@@ -76,6 +75,14 @@ export function sidebarSkyscraperAd(): string {
     </div>`;
 }
 
+export function sidebarHalfSkyscraperAd(): string {
+  return `
+    <div class="adsterra-container adsterra-160x300" style="display: flex; flex-direction: column; align-items: center; padding: 20px 10px; background: var(--color-background-offset); border-right: 1px solid var(--color-border); height: 100%;">
+      <span style="font-size: 0.65rem; color: var(--color-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.05em;">Sponsor</span>
+      <div id="ad-160x300-slot" style="position: sticky; top: 20px;"></div>
+    </div>`;
+}
+
 export function contentBannerAd(): string {
   return `
     <div class="adsterra-container adsterra-468x60" style="display: flex; justify-content: center; align-items: center; padding: 20px 0; width: 100%;">
@@ -98,7 +105,6 @@ export function nativeAdContainer(): string {
 }
 
 export function triggerAdsterraLoads(): void {
-  // 1. Social Bar (Pop-under)
   if (!document.querySelector('script[src*="pl30102143.effectivecpmnetwork.com"]')) {
     const sb = document.createElement("script");
     sb.src = "https://pl30102143.effectivecpmnetwork.com/0c/db/4e/0cdb4e1215361436edb94451ba5cae14.js";
@@ -106,7 +112,6 @@ export function triggerAdsterraLoads(): void {
     document.head.appendChild(sb);
   }
 
-  // 2. Native Banner
   const nativeCont = document.getElementById("container-776951a86861b9863f167c7cf03bcc3e");
   if (nativeCont && !nativeCont.querySelector("script")) {
     const nb = document.createElement("script");
@@ -116,29 +121,36 @@ export function triggerAdsterraLoads(): void {
     nativeCont.appendChild(nb);
   }
 
-  const loadIframeAd = (slotId: string, key: string, w: number, h: number) => {
-    const slot = document.getElementById(slotId);
-    if (slot && !slot.querySelector("iframe") && !slot.querySelector("script")) {
+  const iframeAds: Array<[string, string, number, number]> = [
+    ["ad-728x90-slot", "4ad6c93e31e761abac4127ac5d2c0018", 728, 90],
+    ["ad-320x50-slot", "9acad8e008b81557f5f5b74a6e7816a2", 320, 50],
+    ["ad-160x600-slot", "425d79358388bfe14eabe49bba27d07d", 160, 600],
+    ["ad-468x60-slot", "1e9837c95b8dd8989b1dc9a1c66bccb4", 468, 60],
+    ["ad-300x250-slot", "920af981da136d4562c81f22f5698798", 300, 250],
+    ["ad-160x300-slot", "7cf28e9df908b07a19a7fc9603035405", 160, 300]
+  ];
+
+  let adSequence = Promise.resolve();
+
+  for (const [slotId, key, w, h] of iframeAds) {
+    adSequence = adSequence.then(() => new Promise<void>((resolve) => {
+      const slot = document.getElementById(slotId);
+      if (!slot || slot.querySelector("iframe")) { resolve(); return; }
       (window as any).atOptions = {
-        'key' : key,
-        'format' : 'iframe',
-        'height' : h,
-        'width' : w,
-        'params' : {}
+        'key': key,
+        'format': 'iframe',
+        'height': h,
+        'width': w,
+        'params': {}
       };
       const script = document.createElement("script");
       script.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
-      script.async = true;
+      script.setAttribute("data-cfasync", "false");
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
       slot.appendChild(script);
-    }
-  };
-
-  loadIframeAd("ad-728x90-slot", "4ad6c93e31e761abac4127ac5d2c0018", 728, 90);
-  loadIframeAd("ad-320x50-slot", "9acad8e008b81557f5f5b74a6e7816a2", 320, 50);
-  loadIframeAd("ad-160x600-slot", "425d79358388bfe14eabe49bba27d07d", 160, 600);
-  loadIframeAd("ad-468x60-slot", "1e9837c95b8dd8989b1dc9a1c66bccb4", 468, 60);
-  loadIframeAd("ad-300x250-slot", "920af981da136d4562c81f22f5698798", 300, 250);
-  loadIframeAd("ad-160x300-slot", "7cf28e9df908b07a19a7fc9603035405", 160, 300);
+    }));
+  }
 }
 
 export function shell(content: string, className = ""): string {
@@ -156,6 +168,9 @@ export function shell(content: string, className = ""): string {
     ${desktopLeaderboardAd()}
     ${mobileHeaderAd()}
     <div class="site-layout-wrapper" style="display: flex; max-width: 1400px; margin: 0 auto; width: 100%;">
+      <aside class="desktop-only-ad-sidebar desktop-only-ad-sidebar-left" style="width: 180px; flex-shrink: 0; background: var(--color-background-offset); border-right: 1px solid var(--color-border);">
+        ${sidebarHalfSkyscraperAd()}
+      </aside>
       <main id="main-content" class="${className}" style="flex: 1; min-width: 0; padding: 20px;">
         ${content}
       </main>
@@ -167,37 +182,27 @@ export function shell(content: string, className = ""): string {
   `;
 }
 
-export function consentBanner(): string {
-  return "";
-}
-
-export function adSlot(label: string, placement: "home" | "native" | "game" | "footer" = "home"): string {
+export function adSlot(label: string, placement: "home" | "native" | "game" | "footer" | "content" = "home"): string {
   if (placement === "home") return mediumRectangleAd();
   if (placement === "native") return nativeAdContainer();
+  if (placement === "content") return contentBannerAd();
   return contentBannerAd();
 }
 
 export function songOfWeek(): string {
   const { song } = siteConfig;
-  if (song.youtubeId && consentService.allows("externalMedia")) {
+  if (song.youtubeId) {
     return `<div class="video-frame"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(song.youtubeId)}" title="${escapeHtml(song.title)} by ${escapeHtml(song.artist)}" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
   }
-  return `<div class="song-card"><span class="eyebrow">Xing Records presents</span><div class="song-art"><span>♪</span></div><div><h3>${escapeHtml(song.title)}</h3><p>${escapeHtml(song.artist)}</p><p class="muted">${song.youtubeId ? "Enable external media in Cookie Settings to play the video here." : "Configure the current feature in the environment variables."}</p><a class="button button-secondary" href="${song.url}" target="_blank" rel="noopener">Open Song of the Week ↗</a></div></div>`;
+  return `<div class="song-card"><span class="eyebrow">Xing Records presents</span><div class="song-art"><span>♪</span></div><div><h3>${escapeHtml(song.title)}</h3><p>${escapeHtml(song.artist)}</p><p class="muted">${"Configure the current feature in the environment variables."}</p><a class="button button-secondary" href="${song.url}" target="_blank" rel="noopener">Open Song of the Week ↗</a></div></div>`;
 }
 
-export function bindGlobalControls(rerender: () => void): void {
+export function bindGlobalControls(_rerender: () => void): void {
   document.querySelector<HTMLButtonElement>(".nav-toggle")?.addEventListener("click", (event) => {
     const button = event.currentTarget as HTMLButtonElement;
     const open = button.getAttribute("aria-expanded") === "true";
     button.setAttribute("aria-expanded", String(!open));
     document.querySelector(".primary-nav")?.classList.toggle("is-open", !open);
-  });
-  document.querySelectorAll<HTMLElement>("[data-consent]").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (button.dataset.consent === "accept") consentService.acceptAll();
-      else consentService.rejectOptional();
-      rerender();
-    });
   });
 }
 

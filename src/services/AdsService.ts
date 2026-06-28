@@ -1,5 +1,4 @@
 import { adConfig } from "../config/adConfig";
-import { consentService } from "./ConsentService";
 
 const HISTORY_KEY = "chart-empire-interstitial-history";
 const MIN_GAP_MS = 3 * 60_000;
@@ -13,7 +12,7 @@ export interface AdContext {
 
 export class AdsService {
   canLoadAds(): boolean {
-    return adConfig.enabled && consentService.allows("ads");
+    return adConfig.enabled;
   }
 
   canShowInterstitial(context: AdContext, now = Date.now()): boolean {
