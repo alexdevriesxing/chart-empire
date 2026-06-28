@@ -135,8 +135,8 @@ export function triggerAdsterraLoads(): void {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.style.overflow = "hidden";
-    iframe.style.width = \`\${w}px\`;
-    iframe.style.height = \`\${h}px\`;
+    iframe.style.width = `${w}px`;
+    iframe.style.height = `${h}px`;
     
     slot.appendChild(iframe);
     
@@ -152,14 +152,14 @@ export function triggerAdsterraLoads(): void {
           <body>
             <script>
               atOptions = {
-                'key' : '\${key}',
+                'key' : '${key}',
                 'format' : 'iframe',
-                'height' : \${h},
-                'width' : \${w},
+                'height' : ${h},
+                'width' : ${w},
                 'params' : {}
               };
             </script>
-            <script src="https://www.highperformanceformat.com/\${key}/invoke.js"></script>
+            <script src="https://www.highperformanceformat.com/${key}/invoke.js"></script>
           </body>
         </html>
       `);
