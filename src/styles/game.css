@@ -422,6 +422,21 @@
 .week-chart-flash span { color: var(--color-gold); font-size: 1.1rem; text-shadow: 0 0 14px rgba(255, 209, 102, 0.6); }
 .week-chart-flash b { font-size: .95rem; }
 .week-chart-flash small { margin-left: auto; color: var(--color-muted); font-size: .66rem; letter-spacing: .08em; }
+.week-songs { display: grid; gap: .45rem; margin-bottom: 1rem; }
+.week-section-label { color: var(--color-muted); font-size: .56rem; font-weight: 900; letter-spacing: .14em; animation: stat-rise .45s ease both; animation-delay: var(--d, 0ms); }
+.week-songs article { display: flex; align-items: center; gap: .7rem; padding: .55rem .7rem; border: 1px solid var(--color-border); border-radius: 12px; background: rgba(255, 255, 255, 0.03); animation: stat-rise .45s ease both; animation-delay: var(--d, 0ms); }
+.week-song-cover { flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px; border: 1px solid rgba(255, 255, 255, 0.1); background-size: cover; background-position: center; }
+.week-song-id { min-width: 0; display: grid; gap: .1rem; }
+.week-song-id b { font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.week-song-id small, .week-song-nums small { color: var(--color-muted); font-size: .64rem; }
+.week-song-nums { margin-left: auto; display: grid; gap: .1rem; text-align: right; flex-shrink: 0; }
+.week-song-nums b { font-size: .74rem; color: var(--color-cyan); font-variant-numeric: tabular-nums; }
+.week-song-chart { flex-shrink: 0; min-width: 62px; padding: .3rem .45rem; border-radius: 8px; font-size: .64rem; font-weight: 900; text-align: center; letter-spacing: .04em; }
+.week-song-chart.new { color: var(--color-gold); background: rgba(255, 209, 102, 0.14); border: 1px solid rgba(255, 209, 102, 0.4); }
+.week-song-chart.up { color: var(--color-emerald); background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); }
+.week-song-chart.down { color: var(--color-danger); background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.32); }
+.week-song-chart.steady { color: var(--color-cyan); background: rgba(24, 224, 255, 0.1); border: 1px solid rgba(24, 224, 255, 0.28); }
+.week-song-chart.out, .week-song-chart.off { color: var(--color-muted); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--color-border); }
 .week-headlines { display: grid; gap: .45rem; margin-bottom: 1.2rem; }
 .week-headlines article { display: flex; align-items: flex-start; gap: .6rem; padding: .6rem .75rem; border: 1px solid var(--color-border); border-radius: 11px; background: rgba(255, 255, 255, 0.025); animation: stat-rise .45s ease both; animation-delay: var(--d, 0ms); }
 .week-headlines i { flex-shrink: 0; width: 8px; height: 8px; margin-top: .35rem; border-radius: 50%; background: var(--color-muted); }

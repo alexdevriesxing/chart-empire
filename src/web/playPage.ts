@@ -781,18 +781,47 @@ function bindGameEvents(): void {
   document.addEventListener("keydown", keydownHandler);
 }
 
+interface SongWeekResult {
+  title: string;
+  artist: string;
+  cover: string;
+  streamsGained: number;
+  earned: number;
+  posBefore: number | null;
+  posAfter: number | null;
+}
+
 async function advanceWeek(): Promise<void> {
   if (!engine) return;
   if (engine.state.pendingEvent) throw new Error("Resolve the current event before advancing the week.");
   const resolvedWeek = engine.state.week;
   const knownNews = new Set(engine.state.news.map((item) => item.id));
+  const songsBefore = engine.state.songs.filter((song) => song.status === "released").map((song) => ({ id: song.id, streams: song.streams, radioSpins: song.radioSpins }));
+  const chartBefore = new Map(engine.state.chart.filter((entry) => entry.playerOwned).map((entry) => [entry.title, entry.position]));
   const report = engine.endWeek();
   const freshNews = engine.state.news.filter((item) => !knownNews.has(item.id));
+  const chartAfter = new Map(engine.state.chart.filter((entry) => entry.playerOwned).map((entry) => [entry.title, entry.position]));
+  const songResults: SongWeekResult[] = songsBefore.flatMap((prev) => {
+    const song = engine!.state.songs.find((item) => item.id === prev.id);
+    if (!song) return [];
+    const artist = engine!.state.artists.find((item) => item.id === song.artistId);
+    const streamsGained = song.streams - prev.streams;
+    const radioGained = song.radioSpins - prev.radioSpins;
+    return [{
+      title: song.title,
+      artist: artist?.name || "",
+      cover: artist ? getGenreImage(artist.genre) : "/images/genre_synth_soul.png",
+      streamsGained,
+      earned: Math.round(streamsGained * 0.0035 + radioGained * 2.1),
+      posBefore: chartBefore.get(song.title) ?? null,
+      posAfter: chartAfter.get(song.title) ?? null
+    }];
+  }).sort((a, b) => b.streamsGained - a.streamsGained).slice(0, 5);
   analyticsService.track("week_resolved", { week: engine.state.week, peakChart: report.peakChart || 0, challenge: engine.state.challengeId || "career" });
   window.dispatchEvent(new CustomEvent<WeekReport>("chart-empire-week", { detail: report }));
   await persistState();
   renderGame();
-  showWeekReport(report, freshNews, resolvedWeek);
+  showWeekReport(report, freshNews, resolvedWeek, songResults);
 }
 
 function renderDeleteAccountScreen(): void {
@@ -871,12 +900,23 @@ function weekVerdict(report: WeekReport, freshNews: NewsItem[]): WeekVerdict {
   return { tone: "neutral", title: "Steady progress.", sub: "No fireworks — but the machine keeps turning." };
 }
 
-function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek: number): void {
+function chartMovementBadge(result: SongWeekResult): string {
+  if (result.posAfter !== null && result.posBefore === null) return `<span class="week-song-chart new">NEW #${result.posAfter}</span>`;
+  if (result.posAfter !== null && result.posBefore !== null) {
+    if (result.posAfter < result.posBefore) return `<span class="week-song-chart up">#${result.posAfter} ▲${result.posBefore - result.posAfter}</span>`;
+    if (result.posAfter > result.posBefore) return `<span class="week-song-chart down">#${result.posAfter} ▼${result.posAfter - result.posBefore}</span>`;
+    return `<span class="week-song-chart steady">#${result.posAfter} —</span>`;
+  }
+  if (result.posBefore !== null) return `<span class="week-song-chart out">OUT</span>`;
+  return `<span class="week-song-chart off">Off chart</span>`;
+}
+
+function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek: number, songResults: SongWeekResult[] = []): void {
   document.querySelector(".week-overlay")?.remove();
   if (!engine || engine.state.insolvent) return;
   const net = report.revenue - report.expenses;
   const verdict = weekVerdict(report, freshNews);
-  const headlines = freshNews.slice(0, 5);
+  const headlines = freshNews.slice(0, 4);
   const overlay = document.createElement("div");
   overlay.className = `week-overlay verdict-${verdict.tone}`;
   overlay.innerHTML = `
@@ -893,8 +933,9 @@ function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek:
         <article style="--d:360ms"><small>NEW FANS</small><b data-countup="${report.fanGrowth}" data-prefix="+">+0</b></article>
       </div>
       ${report.peakChart ? `<div class="week-chart-flash" style="--d:480ms"><span>◆</span><b>Chart peak: #${report.peakChart}</b><small>Global Pulse Top 20</small></div>` : ""}
-      ${headlines.length ? `<div class="week-headlines">${headlines.map((item, index) => `<article class="${item.tone}" style="--d:${560 + index * 110}ms"><i></i><p>${escapeHtml(item.text)}</p></article>`).join("")}</div>` : ""}
-      <footer class="week-overlay-foot" style="--d:${640 + headlines.length * 110}ms">
+      ${songResults.length ? `<div class="week-songs"><span class="week-section-label" style="--d:520ms">YOUR RELEASES</span>${songResults.map((result, index) => `<article style="--d:${580 + index * 100}ms"><span class="week-song-cover" style="background-image:url('${result.cover}')"></span><div class="week-song-id"><b>${escapeHtml(result.title)}</b><small>${escapeHtml(result.artist)}</small></div><div class="week-song-nums"><b>+${formatNumber(result.streamsGained)} streams</b><small>${formatMoney(result.earned)} earned</small></div>${chartMovementBadge(result)}</article>`).join("")}</div>` : ""}
+      ${headlines.length ? `<div class="week-headlines">${headlines.map((item, index) => `<article class="${item.tone}" style="--d:${620 + songResults.length * 100 + index * 110}ms"><i></i><p>${escapeHtml(item.text)}</p></article>`).join("")}</div>` : ""}
+      <footer class="week-overlay-foot" style="--d:${700 + songResults.length * 100 + headlines.length * 110}ms">
         <button class="button button-primary button-large" data-game-action="dismiss-report">Plan week ${resolvedWeek + 1} →</button>
         ${engine.state.pendingEvent ? '<p class="week-overlay-note">⚠ A decision is waiting on your desk.</p>' : ""}
       </footer>
