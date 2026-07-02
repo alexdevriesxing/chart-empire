@@ -81,8 +81,6 @@ export function nativeAdContainer(): string {
   return `<div class="adsterra-container adsterra-native" style="display:flex;justify-content:center;align-items:center;padding:20px 0;width:100%;"><div id="container-776951a86861b9863f167c7cf03bcc3e" style="width:100%;"></div></div>`;
 }
 
-let adLoadCounter = 0;
-
 export function triggerAdsterraLoads(): void {
   if (!document.querySelector('script[src*="pl30102143.effectivecpmnetwork.com"]')) {
     const sb = document.createElement("script");
@@ -209,6 +207,32 @@ export function bindGlobalControls(_rerender: () => void): void {
     const open = button.getAttribute("aria-expanded") === "true";
     button.setAttribute("aria-expanded", String(!open));
     document.querySelector(".primary-nav")?.classList.toggle("is-open", !open);
+  });
+}
+
+let revealObserver: IntersectionObserver | null = null;
+
+export function setupScrollReveal(): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  revealObserver?.disconnect();
+  const targets = document.querySelectorAll<HTMLElement>(".feature-card, .partner-card, .news-stack article, .guide-grid article, .prose-section, .prose-grid article, .challenge-grid article, .section-heading, .final-cta, .song-card, .callout");
+  if (!targets.length) return;
+  revealObserver = new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const element = entry.target as HTMLElement;
+      element.classList.add("is-revealed");
+      observer.unobserve(element);
+      window.setTimeout(() => {
+        element.classList.remove("reveal-pending", "is-revealed");
+        element.style.removeProperty("--reveal-delay");
+      }, 1100);
+    }
+  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+  targets.forEach((target, index) => {
+    target.style.setProperty("--reveal-delay", `${(index % 4) * 70}ms`);
+    target.classList.add("reveal-pending");
+    revealObserver!.observe(target);
   });
 }
 

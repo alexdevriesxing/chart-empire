@@ -14,6 +14,10 @@
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-success: #22c55e;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-panel-bg: rgba(13, 18, 36, 0.72);
+  --color-background-offset: #0b0f24;
+  --color-input-bg: rgba(8, 11, 26, 0.85);
   --radius-card: 20px;
   --shadow-glow: 0 0 32px rgba(24, 224, 255, 0.25);
   --shadow-neon-cyan: 0 0 16px rgba(24, 224, 255, 0.4);

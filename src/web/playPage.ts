@@ -9,7 +9,7 @@ import { analyticsService } from "../services/AnalyticsService";
 import { cloudSaveService, type CloudSaveSummary } from "../services/CloudSaveService";
 import { mountTurnstile } from "../services/TurnstileService";
 import { siteConfig } from "../config/siteConfig";
-import type { Campaign, Difficulty, GameState, GameView, StrategyId, WeekReport } from "../types/game";
+import type { Campaign, Difficulty, GameState, GameView, NewsItem, StrategyId, WeekReport } from "../types/game";
 
 const saves = new SaveSystem();
 let engine: SimulationEngine | null = null;
@@ -21,6 +21,7 @@ let cloudSyncState: "local" | "syncing" | "synced" | "error" = "local";
 let cloudSyncTimer: number | null = null;
 let cloudSyncPromise: Promise<void> | null = null;
 let accountsEnabled = false;
+let keydownHandler: ((event: KeyboardEvent) => void) | null = null;
 
 export function playPage(): string {
   return `${header()}${mobileHeaderAd()}<main id="main-content" class="play-page"><div id="phaser-stage" aria-hidden="true"></div><section id="game-ui" class="game-ui" aria-live="polite"><div class="game-loader"><span></span><p>Opening the label office…</p></div></section></main>`;
@@ -150,7 +151,7 @@ function renderGame(): void {
         <div class="sidebar-bottom">${accountUser ? `<button data-game-action="sync-cloud">↻ Sync cloud</button><button data-game-action="publish-score">↗ Publish score</button><label class="import-label">▣ Upload logo<input type="file" accept="image/png,image/jpeg,image/webp" data-logo-upload></label><button data-game-action="account-hub">☁ Cloud careers</button><span>${escapeHtml(accountUser.displayName)} · ${cloudSyncState}</span>` : `<button data-game-action="account">☁ Enable cloud saves</button><button data-game-action="export">⇩ Export save</button><label class="import-label">⇧ Import save<input type="file" accept=".json,application/json" data-game-import></label><span>Guest save · this device</span>`}</div>
       </aside>
       <section class="game-main" style="display: flex; flex-direction: column;">
-        <header class="game-topbar"><button class="mobile-game-menu" data-game-action="toggle-menu" aria-label="Toggle game menu">☰</button><div class="week-chip"><span>WEEK</span><b>${state.week}</b></div><div class="resource"><small>Cash</small><b class="${state.cash < 0 ? "danger" : ""}">${formatMoney(state.cash)}</b></div><div class="resource"><small>Fans</small><b>${formatNumber(state.fanbase)}</b></div><div class="resource"><small>Reputation</small><b>${state.reputation}</b></div><label class="quality-control"><span>Quality</span><select data-quality><option value="high" ${quality() === "high" ? "selected" : ""}>High</option><option value="balanced" ${quality() === "balanced" ? "selected" : ""}>Balanced</option><option value="battery" ${quality() === "battery" ? "selected" : ""}>Battery</option></select></label><button class="audio-toggle" data-game-action="mute" aria-label="${audioService.muted ? "Unmute game audio" : "Mute game audio"}">${audioService.muted ? "♪̸" : "♪"}</button><button class="button button-primary advance-button" data-game-action="end-week">Advance week →</button></header>
+        <header class="game-topbar"><button class="mobile-game-menu" data-game-action="toggle-menu" aria-label="Toggle game menu">☰</button><div class="week-chip"><span>WEEK</span><b>${state.week}</b></div><div class="resource"><small>Cash</small><b class="${state.cash < 0 ? "danger" : ""}">${formatMoney(state.cash)}</b></div><div class="resource"><small>Fans</small><b>${formatNumber(state.fanbase)}</b></div><div class="resource"><small>Reputation</small><b>${state.reputation}</b></div><label class="quality-control"><span>Quality</span><select data-quality><option value="high" ${quality() === "high" ? "selected" : ""}>High</option><option value="balanced" ${quality() === "balanced" ? "selected" : ""}>Balanced</option><option value="battery" ${quality() === "battery" ? "selected" : ""}>Battery</option></select></label><button class="audio-toggle" data-game-action="mute" aria-label="${audioService.muted ? "Unmute game audio" : "Mute game audio"}">${audioService.muted ? "♪̸" : "♪"}</button>${state.pendingEvent ? `<button class="button advance-button needs-decision" data-game-action="goto-event">⚠ Decide event</button>` : `<button class="button button-primary advance-button" data-game-action="end-week">Advance week →</button>`}</header>
         <div class="mobile-resource-strip"><span class="${state.cash < 0 ? "danger" : ""}">€${formatNumber(state.cash)}</span><span>${formatNumber(state.fanbase)} fans</span><span>Rep ${state.reputation}</span></div>
         <div class="game-layout-container" style="display: flex; flex: 1; min-height: 0;">
           <div class="game-content" style="flex: 1; min-width: 0; overflow-y: auto; padding: 20px;">${renderView(currentView, signed)}</div>
@@ -674,13 +675,17 @@ function bindGameEvents(): void {
       }
       if (action === "event-choice" && target.dataset.id) engine.resolveEvent(target.dataset.id);
       if (action === "end-week") {
-        if (engine.state.pendingEvent) throw new Error("Resolve the current event before advancing the week.");
-        const report = engine.endWeek();
-        analyticsService.track("week_resolved", { week: engine.state.week, peakChart: report.peakChart || 0, challenge: engine.state.challengeId || "career" });
-        window.dispatchEvent(new CustomEvent<WeekReport>("chart-empire-week", { detail: report }));
-        await persistState();
+        await advanceWeek();
+        return;
+      }
+      if (action === "goto-event") {
+        currentView = "dashboard";
         renderGame();
-        showReport(report);
+        document.querySelector(".event-decision")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      if (action === "dismiss-report") {
+        document.querySelector(".week-overlay")?.remove();
         return;
       }
       if (action === "sync-cloud") {
@@ -750,9 +755,14 @@ function bindGameEvents(): void {
   });
 
   const viewKeys: Record<string, GameView> = { "1": "dashboard", "2": "scout", "3": "roster", "4": "studio", "5": "marketing", "6": "touring", "7": "staff", "8": "charts", "9": "finance" };
-  document.addEventListener("keydown", async (event: KeyboardEvent) => {
-    if (!engine) return;
+  if (keydownHandler) document.removeEventListener("keydown", keydownHandler);
+  keydownHandler = async (event: KeyboardEvent) => {
+    if (!engine || !document.querySelector("#game-ui")) return;
     if ((event.target as HTMLElement).matches("input, textarea, select")) return;
+    if (event.key === "Escape") {
+      document.querySelector(".week-overlay")?.remove();
+      return;
+    }
     if (viewKeys[event.key]) {
       currentView = viewKeys[event.key]!;
       renderGame();
@@ -760,19 +770,29 @@ function bindGameEvents(): void {
     }
     if (event.key === " " && !event.repeat) {
       event.preventDefault();
-      if (engine.state.pendingEvent) return;
+      if (engine.state.pendingEvent || document.querySelector(".week-overlay")) return;
       try {
-        const report = engine.endWeek();
-        analyticsService.track("week_resolved", { week: engine.state.week, peakChart: report.peakChart || 0, challenge: engine.state.challengeId || "career" });
-        window.dispatchEvent(new CustomEvent<WeekReport>("chart-empire-week", { detail: report }));
-        await persistState();
-        renderGame();
-        showReport(report);
+        await advanceWeek();
       } catch (error) {
         showToast(error instanceof Error ? error.message : "Week advance failed.", true);
       }
     }
-  });
+  };
+  document.addEventListener("keydown", keydownHandler);
+}
+
+async function advanceWeek(): Promise<void> {
+  if (!engine) return;
+  if (engine.state.pendingEvent) throw new Error("Resolve the current event before advancing the week.");
+  const resolvedWeek = engine.state.week;
+  const knownNews = new Set(engine.state.news.map((item) => item.id));
+  const report = engine.endWeek();
+  const freshNews = engine.state.news.filter((item) => !knownNews.has(item.id));
+  analyticsService.track("week_resolved", { week: engine.state.week, peakChart: report.peakChart || 0, challenge: engine.state.challengeId || "career" });
+  window.dispatchEvent(new CustomEvent<WeekReport>("chart-empire-week", { detail: report }));
+  await persistState();
+  renderGame();
+  showWeekReport(report, freshNews, resolvedWeek);
 }
 
 function renderDeleteAccountScreen(): void {
@@ -835,8 +855,80 @@ function updateSyncIndicator(): void {
   if (indicator && accountUser) indicator.textContent = `${accountUser.displayName} · ${cloudSyncState}`;
 }
 
-function showReport(report: WeekReport): void {
-  showToast(`Week resolved · ${formatMoney(report.revenue)} revenue · ${formatMoney(report.expenses)} expenses · +${formatNumber(report.fanGrowth)} fans${report.peakChart ? ` · Peak #${report.peakChart}` : ""}`);
+type WeekVerdict = { tone: "good" | "neutral" | "bad"; title: string; sub: string };
+
+function weekVerdict(report: WeekReport, freshNews: NewsItem[]): WeekVerdict {
+  const net = report.revenue - report.expenses;
+  let score = 0;
+  if (net > 0) score += 1;
+  if (net < -20000) score -= 1;
+  if (report.peakChart && report.peakChart <= 10) score += 1;
+  if (report.fanGrowth > 2500) score += 1;
+  if (freshNews.some((item) => item.tone === "danger")) score -= 1;
+  if (freshNews.filter((item) => item.tone === "good").length >= 2) score += 1;
+  if (score >= 2) return { tone: "good", title: "Breakout week!", sub: "The industry is talking about your label." };
+  if (score <= -1) return { tone: "bad", title: "Rough week.", sub: "Regroup, protect the runway, and plan the comeback." };
+  return { tone: "neutral", title: "Steady progress.", sub: "No fireworks — but the machine keeps turning." };
+}
+
+function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek: number): void {
+  document.querySelector(".week-overlay")?.remove();
+  if (!engine || engine.state.insolvent) return;
+  const net = report.revenue - report.expenses;
+  const verdict = weekVerdict(report, freshNews);
+  const headlines = freshNews.slice(0, 5);
+  const overlay = document.createElement("div");
+  overlay.className = `week-overlay verdict-${verdict.tone}`;
+  overlay.innerHTML = `
+    <div class="week-overlay-card" role="dialog" aria-modal="true" aria-label="Week ${resolvedWeek} results">
+      <header class="week-overlay-head">
+        <span class="week-overlay-kicker">WEEK ${resolvedWeek} · THE RESULTS ARE IN</span>
+        <h2>${verdict.title}</h2>
+        <p>${verdict.sub}</p>
+      </header>
+      <div class="week-stats">
+        <article style="--d:0ms"><small>REVENUE</small><b class="pos" data-countup="${report.revenue}" data-prefix="+€">+€0</b></article>
+        <article style="--d:120ms"><small>EXPENSES</small><b class="neg" data-countup="${report.expenses}" data-prefix="-€">-€0</b></article>
+        <article style="--d:240ms"><small>NET RESULT</small><b class="${net >= 0 ? "pos" : "neg"}" data-countup="${Math.abs(net)}" data-prefix="${net >= 0 ? "+€" : "-€"}">€0</b></article>
+        <article style="--d:360ms"><small>NEW FANS</small><b data-countup="${report.fanGrowth}" data-prefix="+">+0</b></article>
+      </div>
+      ${report.peakChart ? `<div class="week-chart-flash" style="--d:480ms"><span>◆</span><b>Chart peak: #${report.peakChart}</b><small>Global Pulse Top 20</small></div>` : ""}
+      ${headlines.length ? `<div class="week-headlines">${headlines.map((item, index) => `<article class="${item.tone}" style="--d:${560 + index * 110}ms"><i></i><p>${escapeHtml(item.text)}</p></article>`).join("")}</div>` : ""}
+      <footer class="week-overlay-foot" style="--d:${640 + headlines.length * 110}ms">
+        <button class="button button-primary button-large" data-game-action="dismiss-report">Plan week ${resolvedWeek + 1} →</button>
+        ${engine.state.pendingEvent ? '<p class="week-overlay-note">⚠ A decision is waiting on your desk.</p>' : ""}
+      </footer>
+    </div>`;
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) overlay.remove();
+  });
+  gameRoot().appendChild(overlay);
+  audioService.cue(verdict.tone === "bad" ? "error" : "success");
+  runCountUps(overlay);
+}
+
+function runCountUps(scope: HTMLElement): void {
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  scope.querySelectorAll<HTMLElement>("[data-countup]").forEach((element) => {
+    const target = Number(element.dataset.countup || 0);
+    const prefix = element.dataset.prefix || "";
+    const render = (value: number): void => {
+      element.textContent = `${prefix}${formatNumber(Math.round(value))}`;
+    };
+    if (reduced || target <= 0) {
+      render(target);
+      return;
+    }
+    const duration = 900;
+    const start = performance.now();
+    const tick = (now: number): void => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      render(target * eased);
+      if (progress < 1 && element.isConnected) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
 }
 
 function showToast(message: string, danger = false): void {

@@ -399,3 +399,50 @@
   100% { border-color: rgba(124, 58, 237, 0.7); box-shadow: 0 0 20px rgba(124, 58, 237, 0.2); }
 }
 
+/* ---- Week resolution overlay ---- */
+.week-overlay { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(4, 6, 16, 0.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); animation: overlay-fade .3s ease both; overflow-y: auto; }
+.week-overlay-card { width: min(620px, 100%); max-height: calc(100vh - 2rem); overflow-y: auto; padding: 1.8rem; border: 1px solid var(--color-border); border-radius: 22px; background: linear-gradient(160deg, rgba(17, 24, 39, 0.97), rgba(10, 14, 30, 0.97)); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65); animation: card-pop .45s cubic-bezier(.22, 1.4, .36, 1) both; }
+.verdict-good .week-overlay-card { border-color: rgba(16, 185, 129, 0.45); box-shadow: 0 0 60px rgba(16, 185, 129, 0.18), 0 30px 90px rgba(0, 0, 0, 0.65); }
+.verdict-bad .week-overlay-card { border-color: rgba(239, 68, 68, 0.45); box-shadow: 0 0 60px rgba(239, 68, 68, 0.16), 0 30px 90px rgba(0, 0, 0, 0.65); }
+.verdict-neutral .week-overlay-card { border-color: rgba(24, 224, 255, 0.32); box-shadow: 0 0 60px rgba(24, 224, 255, 0.12), 0 30px 90px rgba(0, 0, 0, 0.65); }
+.week-overlay-head { text-align: center; margin-bottom: 1.3rem; }
+.week-overlay-kicker { display: inline-block; padding: .3rem .7rem; border-radius: 999px; border: 1px solid var(--color-border); font-size: .6rem; font-weight: 900; letter-spacing: .16em; color: var(--color-muted); }
+.week-overlay-head h2 { margin: .7rem 0 .25rem; font-size: clamp(1.7rem, 5vw, 2.4rem); }
+.verdict-good .week-overlay-head h2 { color: var(--color-emerald); text-shadow: 0 0 26px rgba(16, 185, 129, 0.4); }
+.verdict-bad .week-overlay-head h2 { color: var(--color-danger); text-shadow: 0 0 26px rgba(239, 68, 68, 0.35); }
+.verdict-neutral .week-overlay-head h2 { color: var(--color-cyan); text-shadow: 0 0 26px rgba(24, 224, 255, 0.3); }
+.week-overlay-head p { margin: 0; font-size: .84rem; }
+.week-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; margin-bottom: 1rem; }
+.week-stats article { padding: .8rem .6rem; border: 1px solid var(--color-border); border-radius: 14px; background: rgba(255, 255, 255, 0.03); text-align: center; animation: stat-rise .5s ease both; animation-delay: var(--d, 0ms); }
+.week-stats small { display: block; margin-bottom: .35rem; color: var(--color-muted); font-size: .56rem; font-weight: 900; letter-spacing: .12em; }
+.week-stats b { font-size: clamp(.9rem, 2.4vw, 1.15rem); font-variant-numeric: tabular-nums; }
+.week-stats b.pos { color: var(--color-emerald); }
+.week-stats b.neg { color: var(--color-danger); }
+.week-chart-flash { display: flex; align-items: center; gap: .7rem; margin-bottom: 1rem; padding: .8rem 1rem; border: 1px solid rgba(255, 209, 102, 0.4); border-radius: 14px; background: linear-gradient(90deg, rgba(255, 209, 102, 0.14), rgba(13, 18, 36, 0.6)); animation: stat-rise .5s ease both; animation-delay: var(--d, 0ms); }
+.week-chart-flash span { color: var(--color-gold); font-size: 1.1rem; text-shadow: 0 0 14px rgba(255, 209, 102, 0.6); }
+.week-chart-flash b { font-size: .95rem; }
+.week-chart-flash small { margin-left: auto; color: var(--color-muted); font-size: .66rem; letter-spacing: .08em; }
+.week-headlines { display: grid; gap: .45rem; margin-bottom: 1.2rem; }
+.week-headlines article { display: flex; align-items: flex-start; gap: .6rem; padding: .6rem .75rem; border: 1px solid var(--color-border); border-radius: 11px; background: rgba(255, 255, 255, 0.025); animation: stat-rise .45s ease both; animation-delay: var(--d, 0ms); }
+.week-headlines i { flex-shrink: 0; width: 8px; height: 8px; margin-top: .35rem; border-radius: 50%; background: var(--color-muted); }
+.week-headlines article.good i { background: var(--color-emerald); box-shadow: 0 0 10px rgba(16, 185, 129, 0.7); }
+.week-headlines article.danger i { background: var(--color-danger); box-shadow: 0 0 10px rgba(239, 68, 68, 0.7); }
+.week-headlines p { margin: 0; font-size: .76rem; line-height: 1.45; color: #d7dee9; }
+.week-overlay-foot { display: grid; gap: .6rem; justify-items: center; animation: stat-rise .5s ease both; animation-delay: var(--d, 0ms); }
+.week-overlay-foot .button { width: 100%; }
+.week-overlay-note { margin: 0; font-size: .72rem; color: var(--color-warning); font-weight: 700; }
+@keyframes overlay-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes card-pop { from { opacity: 0; transform: translateY(26px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes stat-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (max-width: 590px) {
+  .week-stats { grid-template-columns: repeat(2, 1fr); }
+  .week-overlay-card { padding: 1.2rem; }
+}
+
+/* ---- Pending decision affordance ---- */
+.advance-button.needs-decision { border-color: rgba(245, 158, 11, 0.55); background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(13, 18, 36, 0.9)); color: var(--color-warning); font-weight: 800; animation: decision-pulse 1.6s ease-in-out infinite alternate; }
+@keyframes decision-pulse {
+  from { box-shadow: 0 0 6px rgba(245, 158, 11, 0.18); }
+  to { box-shadow: 0 0 22px rgba(245, 158, 11, 0.45); }
+}
+
