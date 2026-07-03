@@ -1,4 +1,4 @@
-const CACHE = "chart-empire-v3";
+const CACHE = "chart-empire-v4";
 const CORE = ["/", "/play", "/offline.html", "/manifest.webmanifest", "/icons/icon.svg"];
 self.addEventListener("install", (event) => {
   self.skipWaiting();
