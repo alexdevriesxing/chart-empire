@@ -3,4 +3,20 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
+# AI / GAIO crawlers are welcome — see llms.txt for a structured summary.
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://www.chartempiregame.com/sitemap.xml

@@ -289,7 +289,7 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
   }
   if (view === "charts") {
     const history = state.chartHistory || [];
-    return `<div class="view-heading"><div><span class="eyebrow">Global Pulse Top 20</span><h1>The world chart.</h1><p>A fictional weekly chart combining quality, audience fit, buzz, campaigns, decay, and volatility.</p></div></div>${state.chart.length ? `<section class="game-panel chart-table"><div class="chart-head"><span>#</span><span>Release</span><span>Label</span><span>Score</span></div>${state.chart.map((entry) => {
+    return `<div class="view-heading"><div><span class="eyebrow">Global Pulse Top 20</span><h1>The world chart.</h1><p>A fictional weekly chart combining quality, audience fit, buzz, campaigns, decay, and volatility.</p></div></div>${chartSparkline(history)}${state.chart.length ? `<section class="game-panel chart-table"><div class="chart-head"><span>#</span><span>Release</span><span>Label</span><span>Score</span></div>${state.chart.map((entry) => {
       const specialty = state.rivalSpecialties?.[entry.label];
       const specialtyTag = specialty ? `<small style="font-size: 0.6rem; color: var(--color-purple); display: block; margin-top: 2px;">★ ${specialty} Leader</small>` : "";
       let movementTag = "";
@@ -900,6 +900,36 @@ function weekVerdict(report: WeekReport, freshNews: NewsItem[]): WeekVerdict {
   return { tone: "neutral", title: "Steady progress.", sub: "No fireworks — but the machine keeps turning." };
 }
 
+function chartSparkline(history: GameState["chartHistory"]): string {
+  const points = (history || []).slice(-26);
+  if (points.length < 2) return "";
+  const width = 520;
+  const height = 96;
+  const padX = 10;
+  const padY = 12;
+  const minWeek = points[0]!.week;
+  const spanWeeks = Math.max(1, points[points.length - 1]!.week - minWeek);
+  const coords = points.map((point) => {
+    const x = padX + ((point.week - minWeek) / spanWeeks) * (width - padX * 2);
+    const y = padY + ((point.position - 1) / 19) * (height - padY * 2);
+    return [x, y] as const;
+  });
+  const line = coords.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const [lastX, lastY] = coords[coords.length - 1]!;
+  const current = points[points.length - 1]!;
+  const best = points.reduce((acc, point) => Math.min(acc, point.position), 20);
+  return `<section class="game-panel chart-spark"><div class="panel-title"><div><span>TRAJECTORY</span><h2>Your chart run</h2></div><span>Now #${current.position} · Best #${best}</span></div>
+    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Best chart position over the last ${points.length} charting weeks, currently number ${current.position}">
+      <line class="spark-grid" x1="${padX}" y1="${padY}" x2="${width - padX}" y2="${padY}"></line>
+      <line class="spark-grid" x1="${padX}" y1="${height / 2}" x2="${width - padX}" y2="${height / 2}"></line>
+      <line class="spark-grid" x1="${padX}" y1="${height - padY}" x2="${width - padX}" y2="${height - padY}"></line>
+      <text class="spark-label" x="${padX + 2}" y="${padY - 3}">#1</text>
+      <text class="spark-label" x="${padX + 2}" y="${height - padY + 10}">#20</text>
+      <polyline class="spark-line" pathLength="1" points="${line}"></polyline>
+      <circle class="spark-dot" cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="4"></circle>
+    </svg></section>`;
+}
+
 function chartMovementBadge(result: SongWeekResult): string {
   if (result.posAfter !== null && result.posBefore === null) return `<span class="week-song-chart new">NEW #${result.posAfter}</span>`;
   if (result.posAfter !== null && result.posBefore !== null) {
@@ -911,12 +941,24 @@ function chartMovementBadge(result: SongWeekResult): string {
   return `<span class="week-song-chart off">Off chart</span>`;
 }
 
+function managerNotes(state: GameState): string[] {
+  const notes: string[] = [];
+  if (state.cash < 0) notes.push(`Cash is negative (${formatMoney(state.cash)}). ${5 - state.debtWeeks} grace week${5 - state.debtWeeks === 1 ? "" : "s"} left before insolvency.`);
+  for (const artist of state.artists.filter((item) => item.signed)) {
+    if (artist.fatigue >= 75) notes.push(`${artist.name} is running hot — ${artist.fatigue}% fatigue. More studio or touring risks burnout.`);
+    else if (artist.morale <= 30) notes.push(`${artist.name}'s morale is down to ${artist.morale}%. Unhappy artists can walk.`);
+    else if (artist.contractWeeks > 0 && artist.contractWeeks <= 8) notes.push(`${artist.name}'s contract expires in ${artist.contractWeeks} week${artist.contractWeeks === 1 ? "" : "s"}.`);
+  }
+  return notes.slice(0, 4);
+}
+
 function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek: number, songResults: SongWeekResult[] = []): void {
   document.querySelector(".week-overlay")?.remove();
   if (!engine || engine.state.insolvent) return;
   const net = report.revenue - report.expenses;
   const verdict = weekVerdict(report, freshNews);
   const headlines = freshNews.slice(0, 4);
+  const notes = managerNotes(engine.state);
   const overlay = document.createElement("div");
   overlay.className = `week-overlay verdict-${verdict.tone}`;
   overlay.innerHTML = `
@@ -934,8 +976,9 @@ function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek:
       </div>
       ${report.peakChart ? `<div class="week-chart-flash" style="--d:480ms"><span>◆</span><b>Chart peak: #${report.peakChart}</b><small>Global Pulse Top 20</small></div>` : ""}
       ${songResults.length ? `<div class="week-songs"><span class="week-section-label" style="--d:520ms">YOUR RELEASES</span>${songResults.map((result, index) => `<article style="--d:${580 + index * 100}ms"><span class="week-song-cover" style="background-image:url('${result.cover}')"></span><div class="week-song-id"><b>${escapeHtml(result.title)}</b><small>${escapeHtml(result.artist)}</small></div><div class="week-song-nums"><b>+${formatNumber(result.streamsGained)} streams</b><small>${formatMoney(result.earned)} earned</small></div>${chartMovementBadge(result)}</article>`).join("")}</div>` : ""}
-      ${headlines.length ? `<div class="week-headlines">${headlines.map((item, index) => `<article class="${item.tone}" style="--d:${620 + songResults.length * 100 + index * 110}ms"><i></i><p>${escapeHtml(item.text)}</p></article>`).join("")}</div>` : ""}
-      <footer class="week-overlay-foot" style="--d:${700 + songResults.length * 100 + headlines.length * 110}ms">
+      ${notes.length ? `<div class="week-notes"><span class="week-section-label" style="--d:${600 + songResults.length * 100}ms">MANAGER'S NOTES</span>${notes.map((note, index) => `<article style="--d:${650 + songResults.length * 100 + index * 90}ms"><span>!</span><p>${escapeHtml(note)}</p></article>`).join("")}</div>` : ""}
+      ${headlines.length ? `<div class="week-headlines">${headlines.map((item, index) => `<article class="${item.tone}" style="--d:${680 + songResults.length * 100 + notes.length * 90 + index * 110}ms"><i></i><p>${escapeHtml(item.text)}</p></article>`).join("")}</div>` : ""}
+      <footer class="week-overlay-foot" style="--d:${760 + songResults.length * 100 + notes.length * 90 + headlines.length * 110}ms">
         <button class="button button-primary button-large" data-game-action="dismiss-report">Plan week ${resolvedWeek + 1} →</button>
         ${engine.state.pendingEvent ? '<p class="week-overlay-note">⚠ A decision is waiting on your desk.</p>' : ""}
       </footer>
@@ -946,6 +989,7 @@ function showWeekReport(report: WeekReport, freshNews: NewsItem[], resolvedWeek:
   gameRoot().appendChild(overlay);
   audioService.cue(verdict.tone === "bad" ? "error" : "success");
   runCountUps(overlay);
+  overlay.querySelector<HTMLButtonElement>('[data-game-action="dismiss-report"]')?.focus({ preventScroll: true });
 }
 
 function runCountUps(scope: HTMLElement): void {

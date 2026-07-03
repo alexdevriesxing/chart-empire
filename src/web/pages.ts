@@ -29,13 +29,14 @@ export function homePage(): string {
           <span class="address-bar">chart-empire.com/play</span>
         </div>
         <div class="hero-image-wrap">
-          <img src="/images/chart_empire_hero.png" alt="Chart Empire Game Preview - Music Label Management Simulation">
+          <img src="/images/chart_empire_hero.png" alt="Chart Empire Game Preview - Music Label Management Simulation" width="1200" height="900" fetchpriority="high">
           <div class="overlay-stats">
             <div class="notification">✦ <span><b>Festival offer received</b><small>Electric Horizon wants your headliner.</small></span></div>
           </div>
         </div>
       </div>
     </section>
+    ${industryTicker()}
     ${adSlot("Premium launch sponsor", "home")}
     <section class="section"><div class="section-heading"><span class="eyebrow">Your label. Your decisions.</span><h2>Every release starts a new story.</h2><p>Build careers in a living fictional industry where creative choices, timing, relationships, and cashflow all matter.</p></div>
       <div class="feature-grid">${features.map(([icon, title, copy]) => `<article class="feature-card"><span class="feature-icon">${icon}</span><h3>${title}</h3><p>${copy}</p></article>`).join("")}</div>
@@ -53,6 +54,22 @@ export function homePage(): string {
   `, "home-page");
 }
 
+const tickerHeadlines = [
+  ["INDIE PULSE WEEKLY", "Synth-soul wave enters its twelfth chart week"],
+  ["STARWAVE NETWORK", "Midnight Arcade holds late-night rotation across four markets"],
+  ["FANWIRE", "#GlassSatellitesTour trends in six markets overnight"],
+  ["GLOBAL PULSE", "Three debut labels crack the Top 20 in the same week"],
+  ["VELVET CIRCUIT", "Rival A&R teams bid on the same bedroom-pop prospect"],
+  ["NEON HORIZON FEST", "Headliner slots open after a surprise cancellation"],
+  ["THE LEDGER", "Vinyl margins outpace streaming for boutique catalogs again"],
+  ["BACKSTAGE BRIEF", "Burnout warnings rise as tour routing tightens"]
+];
+
+function industryTicker(): string {
+  const items = tickerHeadlines.map(([source, text]) => `<span class="ticker-item"><b>${source}</b>${text}</span>`).join("");
+  return `<div class="industry-ticker" aria-hidden="true"><div class="ticker-track">${items}${items}</div></div>`;
+}
+
 const educationalSections = [
   ["What does a record label do?", "A label coordinates investment, recording, distribution, promotion, rights administration, audience development, and long-term catalog strategy. The exact role changes with every deal."],
   ["What does artist management do?", "Management connects creative ambition to practical decisions: team building, schedules, negotiations, brand positioning, opportunities, and career health."],
@@ -67,7 +84,7 @@ const educationalSections = [
 export function contentPage(path: string): string {
   const pages: Record<string, { eyebrow: string; title: string; lead: string; body: string }> = {
     "/guide": { eyebrow: "Game guide", title: "From first signing to global empire.", lead: "A practical guide to the systems that decide whether your label thrives, stalls, or runs out of cash.", body: guideBody() },
-    "/how-the-music-industry-works": { eyebrow: "Educational guide", title: "How the music industry works.", lead: "Labels, managers, radio, streaming, press, fan communities, and live shows all shape a career differently.", body: educationalSections.map(([title, copy], index) => `<article class="prose-section"><span>0${index + 1}</span><div><h2>${title}</h2><p>${copy}</p></div></article>`).join("") },
+    "/how-the-music-industry-works": { eyebrow: "Educational guide", title: "How the music industry works.", lead: "Labels, managers, radio, streaming, press, fan communities, and live shows all shape a career differently.", body: educationalSections.map(([title, copy], index) => `<article class="prose-section"><span>0${index + 1}</span><div><h2>${title}</h2><p>${copy}</p></div></article>${index === 3 ? mediumRectangleAd() : ""}`).join("") },
     "/music-promotion": { eyebrow: "Real-world artist support", title: "Promote your music beyond the game.", lead: "Strategy starts with a strong release, clear positioning, realistic goals, and outreach that fits the artist.", body: promotionBody() },
     "/xing-records": { eyebrow: "Real independent music", title: "Discover Xing Records.", lead: "A real-world music home inside a completely fictional game universe.", body: `<section class="inline-feature"><div><h2>Song of the Week</h2><p>Feature a current Xing Records release through environment configuration.</p></div>${songOfWeek()}</section><section class="prose-grid"><article><h3>Featured releases</h3><p>Release cards are ready for curated artwork and links when owned media is supplied.</p></article><article><h3>Artist showcase</h3><p>Use this area for real Xing Records artists without mixing them into the fictional simulation.</p></article></section><a class="button button-primary" href="${siteConfig.xingRecordsUrl}" target="_blank" rel="noopener">Visit Xing Records ↗</a>` },
     "/song-of-the-week": { eyebrow: "Xing Records presents", title: "Song of the Week.", lead: "A weekly spotlight for a real independent release.", body: songOfWeek() },

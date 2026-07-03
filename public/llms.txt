@@ -1,0 +1,28 @@
+# Chart Empire
+
+> Chart Empire: The Music Label Manager is a free, browser-based music industry management simulation game. Players build a fictional record label, sign generated artists, record and release songs, run radio/press/streaming/playlist/fan-club campaigns, tour, manage cashflow, and compete against AI rival labels on a weekly deterministic chart. No download or account is required; guest careers save locally.
+
+## About the game
+
+- Genre: management simulation / strategy / music.
+- Platform: web browser (desktop and mobile), built with TypeScript and Phaser.
+- Core loop: plan the week (scout, sign, record, release, promote), react to industry events, then resolve the week and see good/neutral/bad outcomes with streams, revenue, chart movement, and news.
+- All artists, labels, publications, radio networks, streaming services, playlists, festivals, and charts are fictional.
+- The only real-world properties referenced are the partner links Xing Records (https://www.xingrecords.com) and Indie Music Promotion (https://www.indiemusicpromotion.com).
+- Free to play; supported by advertising. No personal data is collected for guest play.
+
+## Key pages
+
+- [Home](https://www.chartempiregame.com/): overview and play call-to-action.
+- [Play](https://www.chartempiregame.com/play): launch a guest career in the browser.
+- [Game guide](https://www.chartempiregame.com/guide): how scouting, recording, releases, promotion, charts, and finance work.
+- [How the music industry works](https://www.chartempiregame.com/how-the-music-industry-works): educational guide to labels, streaming, radio, press, touring, and fan communities.
+- [Music promotion](https://www.chartempiregame.com/music-promotion): release planning and promotion strategy for independent musicians.
+- [Challenges](https://www.chartempiregame.com/challenges): ten focused strategy scenarios.
+- [Leaderboards](https://www.chartempiregame.com/leaderboards): verified public label rankings.
+
+## Common questions
+
+- Is it free? Yes, completely free with no download. Guest saves are stored locally in the browser.
+- How do I start? Open the play page, name your label, choose a market, difficulty, and strategy, then scout and sign your first artist.
+- Is it real? No. The simulated music industry, artists, and charts are entirely fictional.

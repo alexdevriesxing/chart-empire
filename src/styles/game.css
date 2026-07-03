@@ -437,6 +437,18 @@
 .week-song-chart.down { color: var(--color-danger); background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.32); }
 .week-song-chart.steady { color: var(--color-cyan); background: rgba(24, 224, 255, 0.1); border: 1px solid rgba(24, 224, 255, 0.28); }
 .week-song-chart.out, .week-song-chart.off { color: var(--color-muted); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--color-border); }
+.week-notes { display: grid; gap: .45rem; margin-bottom: 1rem; }
+.week-notes article { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem .7rem; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 11px; background: rgba(245, 158, 11, 0.07); animation: stat-rise .45s ease both; animation-delay: var(--d, 0ms); }
+.week-notes article > span { flex-shrink: 0; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(245, 158, 11, 0.5); color: var(--color-warning); font-size: .62rem; font-weight: 900; }
+.week-notes p { margin: 0; font-size: .74rem; line-height: 1.45; color: #fde8c4; }
+.chart-spark { margin-bottom: 1rem; }
+.chart-spark svg { display: block; width: 100%; height: 96px; }
+.chart-spark .panel-title > span { color: var(--color-cyan); font-size: .7rem; font-weight: 800; }
+.spark-grid { stroke: rgba(255, 255, 255, 0.09); stroke-width: 1; stroke-dasharray: 4 6; }
+.spark-label { fill: var(--color-muted); font-size: 9px; font-weight: 700; letter-spacing: .06em; }
+.spark-line { fill: none; stroke: var(--color-cyan); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: spark-draw 1.3s ease-out forwards; filter: drop-shadow(0 0 6px rgba(24, 224, 255, 0.35)); }
+@keyframes spark-draw { to { stroke-dashoffset: 0; } }
+.spark-dot { fill: var(--color-magenta); filter: drop-shadow(0 0 7px rgba(255, 46, 136, 0.8)); animation: overlay-fade .4s ease 1s both; }
 .week-headlines { display: grid; gap: .45rem; margin-bottom: 1.2rem; }
 .week-headlines article { display: flex; align-items: flex-start; gap: .6rem; padding: .6rem .75rem; border: 1px solid var(--color-border); border-radius: 11px; background: rgba(255, 255, 255, 0.025); animation: stat-rise .45s ease both; animation-delay: var(--d, 0ms); }
 .week-headlines i { flex-shrink: 0; width: 8px; height: 8px; margin-top: .35rem; border-radius: 50%; background: var(--color-muted); }

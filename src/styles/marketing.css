@@ -146,3 +146,12 @@
 /* ---- Scroll reveal (progressive enhancement, cleaned up after animating) ---- */
 .reveal-pending { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s ease; transition-delay: var(--reveal-delay, 0ms); }
 .reveal-pending.is-revealed { opacity: 1; transform: none; }
+
+/* ---- Industry news ticker ---- */
+.industry-ticker { overflow: hidden; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(13,18,36,.55); backdrop-filter: blur(8px); }
+.ticker-track { display: inline-flex; gap: 3.2rem; padding: .72rem 0; white-space: nowrap; will-change: transform; animation: ticker-scroll 46s linear infinite; }
+.industry-ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker-item { display: inline-flex; align-items: center; gap: .6rem; color: #cbd5e1; font-size: .74rem; font-weight: 600; }
+.ticker-item b { color: var(--color-cyan); font-size: .6rem; font-weight: 900; letter-spacing: .14em; }
+.ticker-item::after { content: "•"; margin-left: 2.4rem; color: var(--color-magenta); opacity: .6; }
+@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
