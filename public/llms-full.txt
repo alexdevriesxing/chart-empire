@@ -1,0 +1,36 @@
+# Chart Empire - Full Knowledge Base
+
+> Chart Empire: The Music Label Manager is a free, browser-based music industry management simulation game. Players build a fictional record label, sign generated artists, record and release songs, run campaigns, tour, manage cashflow, and compete against AI rival labels on a weekly deterministic chart.
+
+## Gameplay Loop & Mechanics
+- **Scouting**: Players spend cash or industry influence to scout unsigned talent. Talent has hidden modifiers (potential, loyalty, work ethic) and visible ones (skill, fame).
+- **Recording**: Requires a studio, cash, and time. Better studios increase quality but cost more upfront and weekly. Quality is determined by artist skill, studio level, and random variance.
+- **Releasing**: Songs are released to the chart. Their performance is based on quality, artist fame, label influence, and promotion.
+- **Promotion**: Players run campaigns (Radio, Streaming, Press, Playlists, Fan Clubs) that boost fame, momentum, or direct chart points. Each has different costs and duration.
+- **Charts**: A weekly deterministic chart resolves all releases (player and AI rivals) based on points. High chart positions yield cash and influence.
+- **Fatigue & Morale**: Overworking artists causes fatigue, lowering recording quality and increasing the chance of negative events.
+
+## Challenge Scenarios
+1. **The Indie Darling**: Start with a tiny budget and one highly skilled, completely unknown artist. Goal: Reach #1 on the Indie chart within 1 year.
+2. **The Bankrupt Major**: Inherit a massive label with huge weekly expenses, terrible artists, and massive debt. Goal: Survive for 2 years without going bankrupt.
+3. **The Pop Factory**: You have unlimited funds but can only sign pop artists. Goal: Hold the top 3 spots on the Pop chart simultaneously.
+4. **The One-Hit Wonder**: Your only artist just had a massive #1 hit but has terrible skills and high fatigue. Goal: Secure their follow-up album in the top 10 before their fame fades.
+5. **The Comeback Queen**: Sign a washed-up former star with high fame but terrible morale and skills. Goal: Win "Artist of the Year".
+6. **The Viral Sensation**: An artist blows up overnight on social media. Goal: Capitalize on the momentum and generate $5M revenue in 6 months.
+7. **The Rivalry**: A fierce AI label starts with the exact same budget and artist stats as you. Goal: Beat their total chart points over a 2-year period.
+8. **The Underground King**: You are banned from all Major radio and press. Goal: Reach #1 on the overall chart using only underground promotion and streaming.
+9. **The Festival Headliner**: You must prepare 3 different artists to headline a major summer festival. Goal: All 3 artists must reach 80+ fame by Week 24.
+10. **The Empire Builder**: The ultimate sandbox challenge. Goal: Achieve $100M valuation and own 5 Level 3 studios.
+
+## Technology Stack
+- **Engine**: Custom deterministic simulation engine built in TypeScript.
+- **UI**: Phaser 3 for the game canvas, rendering UI panels with DOM elements for accessibility.
+- **State**: Redux-style immutable state tree, allowing for deterministic resolution and easy saving.
+- **Saves**: LocalStorage for guest careers, Cloudflare D1/KV for authenticated cloud saves.
+- **Hosting**: Cloudflare Pages, edge-rendered SPA.
+
+## Fictional Universe
+All artists, labels, publications, radio networks, streaming services, playlists, festivals, and charts are fictional. The simulation uses procedural generation to create names, genres, and attributes.
+
+## Partner Links
+The only real-world properties referenced are the partner links Xing Records (https://www.xingrecords.com) and Indie Music Promotion (https://www.indiemusicpromotion.com).

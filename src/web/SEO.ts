@@ -4,6 +4,7 @@ interface SEOData {
   title: string;
   description: string;
   path: string;
+  keywords?: string;
   type?: "website" | "article";
 }
 
@@ -14,7 +15,7 @@ export function applySEO(data: SEOData): void {
   const imageUrl = new URL("/images/chart_empire_hero.png", siteConfig.siteUrl).toString();
 
   setMeta("description", data.description);
-  setMeta("keywords", "music label game, music management game, browser game, free music game, record label simulator, music industry game, artist management game, chart game, music empire, indie label game, music strategy game, play music game online");
+  setMeta("keywords", data.keywords || "music label game, music management game, browser game, free music game, record label simulator, music industry game, artist management game, chart game, music empire, indie label game, music strategy game, play music game online");
   setMeta("author", "Fire Dragon Interactive");
   setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
 

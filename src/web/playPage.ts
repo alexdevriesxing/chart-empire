@@ -1,4 +1,4 @@
-import { adSlot, contentBannerAd, escapeHtml, header, mediumRectangleAd, mobileHeaderAd, nativeAdContainer, sidebarSkyscraperAd, triggerAdsterraLoads } from "./components";
+import { escapeHtml, header, mobileHeaderAd, sidebarSkyscraperAd, triggerAdsterraLoads } from "./components";
 import { challengeScenarios, markets, strategies } from "../game/data/content";
 import { SimulationEngine } from "../game/systems/SimulationEngine";
 import { SaveSystem } from "../game/systems/SaveSystem";
@@ -155,7 +155,7 @@ function renderGame(): void {
         <div class="mobile-resource-strip"><span class="${state.cash < 0 ? "danger" : ""}">€${formatNumber(state.cash)}</span><span>${formatNumber(state.fanbase)} fans</span><span>Rep ${state.reputation}</span></div>
         <div class="game-layout-container" style="display: flex; flex: 1; min-height: 0;">
           <div class="game-content" style="flex: 1; min-width: 0; overflow-y: auto; padding: 20px;">${renderView(currentView, signed)}</div>
-          <aside class="desktop-only-ad-sidebar" style="width: 200px; flex-shrink: 0; height: 100%; border-left: 1px solid var(--color-border); background: var(--color-background-offset);">
+          <aside class="desktop-only-ad-sidebar ad-sidebar-game">
             ${sidebarSkyscraperAd()}
           </aside>
         </div>
@@ -193,11 +193,8 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
       <section class="game-panel next-move"><div class="panel-title"><div><span>NEXT MOVE</span><h2>${nextMoveTitle(state)}</h2></div></div>${nextMoveContent(state)}</section></div>
       <div class="dashboard-grid"><section class="game-panel"><div class="panel-title"><div><span>SOCIAL SIGNAL</span><h2>Fictional fan feed</h2></div></div><div class="social-feed">${state.socialFeed.length ? state.socialFeed.slice(0, 5).map((post) => `<article class="${post.sentiment}"><div><b>${escapeHtml(post.author)}</b><span>${escapeHtml(post.platform)} · W${post.week}</span></div><p>${escapeHtml(post.text)}</p></article>`).join("") : "<p class='muted'>Release music to start the conversation.</p>"}</div></section>
       <section class="game-panel"><div class="panel-title"><div><span>MARKET WEATHER</span><h2>Active trends</h2></div></div><div class="trend-list">${state.trends.length ? state.trends.map((trend) => `<article><span>${escapeHtml(trend.genre)}</span><b>${escapeHtml(trend.name)}</b><small>+${trend.strength} signal · ${trend.weeksRemaining} weeks</small></article>`).join("") : "<p class='muted'>The market is between major waves.</p>"}</div></section></div>
-      ${adSlot("Game dashboard sponsor", "game")}
-      ${mediumRectangleAd()}
       <section class="game-panel"><div class="panel-title"><div><span>ROSTER PULSE</span><h2>Signed artists</h2></div><button data-view="roster">View roster →</button></div>${signed.length ? `<div class="artist-row">${signed.slice(0, 4).map(artistCard).join("")}</div>` : `<div class="mini-empty"><p>No artists signed. Your scouts have 75 fictional prospects ready.</p><button class="button button-secondary" data-view="scout">Open scouting</button></div>`}</section>
-      <section class="game-panel achievement-panel"><div class="panel-title"><div><span>LEGACY</span><h2>Achievements</h2></div><span>${state.achievements.length}/20 · ${state.awardsWon} awards</span></div>${state.achievements.length ? `<div class="achievement-list">${state.achievements.map((achievement) => `<span>✦ ${escapeHtml(achievement)}</span>`).join("")}</div>` : "<p class='muted'>Your first milestone is still ahead.</p>"}</section>
-      ${nativeAdContainer()}`;
+      <section class="game-panel achievement-panel"><div class="panel-title"><div><span>LEGACY</span><h2>Achievements</h2></div><span>${state.achievements.length}/20 · ${state.awardsWon} awards</span></div>${state.achievements.length ? `<div class="achievement-list">${state.achievements.map((achievement) => `<span>✦ ${escapeHtml(achievement)}</span>`).join("")}</div>` : "<p class='muted'>Your first milestone is still ahead.</p>"}</section>`;
   }
   if (view === "scout") {
     const upgrades = state.upgrades || [];
@@ -241,8 +238,7 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
     </section>
 
     <div class="card-grid">${engine.scoutCandidates().map((artist) => `<article class="talent-card"><div class="talent-avatar" style="background-image: url('${getArtistLogo(artist.name, artist.genre)}')"><b>${initials(artist.name)}</b></div><div><span>${artist.genre} · ${artist.market}</span><h2>${escapeHtml(artist.name)}</h2></div><div class="talent-stats"><label>Talent <b>${artist.talent}</b><i><em style="width:${artist.talent}%"></em></i></label><label>Appeal <b>${artist.appeal}</b><i><em style="width:${artist.appeal}%"></em></i></label><label>Buzz <b>${artist.buzz}</b><i><em style="width:${artist.buzz}%"></em></i></label></div><footer><span><small>WEEKLY COST</small><b>${formatMoney(artist.weeklyCost)}</b></span><button class="button button-primary" data-game-action="sign" data-id="${artist.id}">Sign · ${formatMoney(artist.weeklyCost * 4)}</button></footer></article>`).join("")}</div>
-    <div style="display: flex; justify-content: center; margin-top: 1rem;"><button class="button button-secondary" data-game-action="refresh-scout">↻ Pass — Show next candidates · ${formatMoney(2000 + (state.scoutOffset || 0) * 500)}</button></div>
-    ${contentBannerAd()}`;
+    <div style="display: flex; justify-content: center; margin-top: 1rem;"><button class="button button-secondary" data-game-action="refresh-scout">↻ Pass — Show next candidates · ${formatMoney(2000 + (state.scoutOffset || 0) * 500)}</button></div>`;
   }
   if (view === "roster") {
     return `<div class="view-heading"><div><span class="eyebrow">Artist development</span><h1>Your roster.</h1><p>Morale and fatigue influence sessions, campaigns, and long-term performance.</p></div></div>${signed.length ? `<div class="card-grid">${signed.map((artist) => `<article class="talent-card signed"><div class="talent-avatar" style="background-image: url('${getArtistLogo(artist.name, artist.genre)}')"><b>${initials(artist.name)}</b></div><div><span>${artist.genre} · ${artist.market}</span><h2>${escapeHtml(artist.name)}</h2></div><div class="talent-stats"><label>Morale <b>${artist.morale}</b><i><em style="width:${artist.morale}%"></em></i></label><label>Fatigue <b>${artist.fatigue}</b><i class="fatigue"><em style="width:${artist.fatigue}%"></em></i></label><label>Buzz <b>${artist.buzz}</b><i><em style="width:${artist.buzz}%"></em></i></label></div>
@@ -382,7 +378,7 @@ function renderView(view: GameView, signed: GameState["artists"]): string {
                       song.certification === "gold" ? `<span class="badge-gold">★ GOLD</span>` : "";
     const videoTag = song.videoQuality ? `<span style="font-size: 0.72rem; color: var(--color-muted); display: block; margin-top: 2px;">🎥 ${song.videoQuality.toUpperCase()} Video · ${formatNumber(song.videoViews || 0)} views</span>` : "";
     return `<article><div class="release-art-thumbnail" style="background-image: url('${coverImg}')"></div><div><span>${song.status}</span><b>${escapeHtml(song.title)}</b>${certBadge}<small>${escapeHtml(artist?.name || "")} · Quality ${song.quality} · ${formatNumber(song.streams)} streams · Peak ${song.peakPosition ? `#${song.peakPosition}` : "—"}</small>${videoTag}</div><em>${formatMoney(song.streams * 0.0035 + song.radioSpins * 2.1)}</em></article>`;
-  }).join("")}</div>` : `<div class="mini-empty"><p>Your catalog has no recorded assets.</p></div>`}</section>${contentBannerAd()}`;
+  }).join("")}</div>` : `<div class="mini-empty"><p>Your catalog has no recorded assets.</p></div>`}</section>`;
 }
 
 function bindGameEvents(): void {
@@ -1091,11 +1087,23 @@ function getArtistLogo(artist: string, genre: string): string {
   }
   
   const normGenre = genre.toLowerCase();
-  if (normGenre.includes("rock") || normGenre.includes("folk")) {
-    return "/images/portrait_indie_singer.png";
+  if (normGenre.includes("rock") || normGenre.includes("metal")) {
+    return "/images/portrait_rock_guitarist.png";
   }
   if (normGenre.includes("rap") || normGenre.includes("hip")) {
     return "/images/portrait_rap_star.png";
+  }
+  if (normGenre.includes("pop")) {
+    return "/images/portrait_pop_diva.png";
+  }
+  if (normGenre.includes("electronic") || normGenre.includes("dance") || normGenre.includes("house")) {
+    return "/images/portrait_electronic_dj.png";
+  }
+  if (normGenre.includes("soul") || normGenre.includes("r&b") || normGenre.includes("jazz")) {
+    return "/images/portrait_soul_singer.png";
+  }
+  if (normGenre.includes("indie") || normGenre.includes("alt") || normGenre.includes("folk")) {
+    return "/images/portrait_indie_singer.png";
   }
 
   let hash = 0;

@@ -81,7 +81,16 @@ export function nativeAdContainer(): string {
   return `<div class="adsterra-container adsterra-native" style="display:flex;justify-content:center;align-items:center;padding:20px 0;width:100%;"><div id="container-776951a86861b9863f167c7cf03bcc3e" style="width:100%;"></div></div>`;
 }
 
+/** Track which ad keys have been loaded this page render to enforce 1x per unit per page */
+const loadedAdKeys = new Set<string>();
+
+/** Reset tracking when navigating (called before each render) */
+export function resetAdTracking(): void {
+  loadedAdKeys.clear();
+}
+
 export function triggerAdsterraLoads(): void {
+  // Social bar — loads once globally
   if (!document.querySelector('script[src*="pl30102143.effectivecpmnetwork.com"]')) {
     const sb = document.createElement("script");
     sb.src = "https://pl30102143.effectivecpmnetwork.com/0c/db/4e/0cdb4e1215361436edb94451ba5cae14.js";
@@ -89,8 +98,10 @@ export function triggerAdsterraLoads(): void {
     document.head.appendChild(sb);
   }
 
+  // Native banner — inject invoke.js directly into the container
   const nativeCont = document.getElementById("container-776951a86861b9863f167c7cf03bcc3e");
-  if (nativeCont && !nativeCont.querySelector("script")) {
+  if (nativeCont && !nativeCont.querySelector("script") && !loadedAdKeys.has("native")) {
+    loadedAdKeys.add("native");
     const nb = document.createElement("script");
     nb.src = "https://pl30102144.effectivecpmnetwork.com/776951a86861b9863f167c7cf03bcc3e/invoke.js";
     nb.async = true;
@@ -98,6 +109,8 @@ export function triggerAdsterraLoads(): void {
     nativeCont.appendChild(nb);
   }
 
+  // Iframe-format ads — inject atOptions + invoke.js directly into the page DOM
+  // Adsterra's invoke.js expects to run at the top-level document, not inside nested iframes
   const iframeAds: Array<[string, string, number, number]> = [
     ["ad-728x90-slot", "4ad6c93e31e761abac4127ac5d2c0018", 728, 90],
     ["ad-320x50-slot", "9acad8e008b81557f5f5b74a6e7816a2", 320, 50],
@@ -110,50 +123,32 @@ export function triggerAdsterraLoads(): void {
   let delay = 0;
   for (const [slotId, key, w, h] of iframeAds) {
     const slot = document.getElementById(slotId);
-    if (!slot || slot.querySelector("iframe")) continue;
-    
-    setTimeout(() => {
-      // Re-check in case the slot was removed from the DOM during the delay
-      const currentSlot = document.getElementById(slotId);
-      if (!currentSlot || currentSlot.querySelector("iframe")) return;
+    if (!slot || slot.children.length > 0) continue;
+    // Enforce 1x per ad key per page — Adsterra requires this
+    if (loadedAdKeys.has(key)) continue;
+    loadedAdKeys.add(key);
 
-      const iframe = document.createElement("iframe");
-      iframe.style.border = "none";
-      iframe.style.overflow = "hidden";
-      iframe.style.width = `${w}px`;
-      iframe.style.height = `${h}px`;
-      iframe.style.background = "transparent";
-      iframe.setAttribute("allowtransparency", "true");
-      
-      currentSlot.appendChild(iframe);
-      
-      const doc = iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <style>body { margin: 0; padding: 0; overflow: hidden; background: transparent; }</style>
-            </head>
-            <body>
-              <script>
-                atOptions = {
-                  'key' : '${key}',
-                  'format' : 'iframe',
-                  'height' : ${h},
-                  'width' : ${w},
-                  'params' : {}
-                };
-              </script>
-              <script src="https://www.highperformanceformat.com/${key}/invoke.js"></script>
-            </body>
-          </html>
-        `);
-        doc.close();
-      }
+    setTimeout(() => {
+      const currentSlot = document.getElementById(slotId);
+      if (!currentSlot || currentSlot.children.length > 0) return;
+
+      // Set container dimensions so the ad has a proper rendering target
+      currentSlot.style.width = `${w}px`;
+      currentSlot.style.height = `${h}px`;
+      currentSlot.style.overflow = "hidden";
+
+      // Inject atOptions as a global, then load the invoke script
+      // Using unique variable name to avoid collisions between staggered loads
+      const optionsScript = document.createElement("script");
+      optionsScript.textContent = `atOptions = { 'key': '${key}', 'format': 'iframe', 'height': ${h}, 'width': ${w}, 'params': {} };`;
+      currentSlot.appendChild(optionsScript);
+
+      const invokeScript = document.createElement("script");
+      invokeScript.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
+      invokeScript.async = true;
+      currentSlot.appendChild(invokeScript);
     }, delay);
-    delay += 250;
+    delay += 300;
   }
 }
 
