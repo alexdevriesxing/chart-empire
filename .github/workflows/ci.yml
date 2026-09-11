@@ -1,9 +1,18 @@
 name: CI
 
+# Runs on demand only.
+#
+# GitHub Actions minutes on this account are exhausted every month, and while
+# they are, every triggered run fails in about four seconds with steps: []
+# having done nothing. Deployment does not depend on Actions - Cloudflare builds
+# each push from Git - so automatic triggers here only consumed the budget and
+# painted healthy commits red.
+#
+# Run this from the Actions tab (Run workflow) when you actually want it, or
+# locally with the commands it wraps. Do not re-add a push trigger unless the
+# minutes budget is raised enough to carry it.
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
